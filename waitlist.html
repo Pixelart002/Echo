@@ -1,0 +1,125 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Waitlist | ECHO.AI</title>
+
+  <!-- Google Font -->
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;800&display=swap" rel="stylesheet">
+
+  <!-- Tailwind CSS -->
+  <script src="https://cdn.tailwindcss.com"></script>
+
+  <!-- GSAP + Anime.js + Lenis + Particles -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/gsap.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/animejs/3.2.1/anime.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/@studio-freight/lenis@1.0.26/bundled/lenis.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/particles.js@2.0.0/particles.min.js"></script>
+
+  <style>
+    html, body {
+      margin: 0;
+      padding: 0;
+      font-family: 'Inter', sans-serif;
+      height: 100%;
+      overflow: hidden;
+      background-color: #0f172a;
+    }
+    #particles-js {
+      position: fixed;
+      width: 100%;
+      height: 100%;
+      z-index: -1;
+    }
+    input, button {
+      outline: none;
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Animated Background -->
+  <div id="particles-js"></div>
+
+  <!-- Waitlist Form -->
+  <div class="flex items-center justify-center min-h-screen px-4">
+    <main class="text-center max-w-lg w-full space-y-8 bg-white/10 backdrop-blur-md p-8 rounded-2xl shadow-xl border border-white/20">
+      <h1 class="text-4xl sm:text-5xl font-extrabold text-white opacity-0" id="titleText">
+        🔊 Welcome to <span class="text-indigo-400">ECHO.AI</span>
+      </h1>
+      <p class="text-lg text-gray-300 opacity-0" id="subText">
+        Be the first to experience the future of image-based AI. Join the waitlist now!
+      </p>
+      <form class="space-y-4" id="waitlistForm">
+        <input type="email" required placeholder="Enter your email"
+          class="w-full p-3 rounded-lg bg-gray-800 border border-gray-600 placeholder-gray-400 text-white" />
+        <button type="submit" id="submitBtn"
+          class="w-full py-3 rounded-lg bg-indigo-600 hover:bg-indigo-700 transition-all font-semibold text-white">
+          Join the Waitlist
+        </button>
+      </form>
+      <p id="thankYou" class="text-green-400 text-sm hidden">✅ You're on the waitlist!</p>
+    </main>
+  </div>
+
+  <!-- Scripts -->
+  <script>
+    // Particle background
+    particlesJS("particles-js", {
+      particles: {
+        number: { value: 60, density: { enable: true, value_area: 800 } },
+        color: { value: "#3b82f6" },
+        shape: { type: "circle" },
+        opacity: { value: 0.5 },
+        size: { value: 3 },
+        line_linked: {
+          enable: true,
+          distance: 150,
+          color: "#3b82f6",
+          opacity: 0.4,
+          width: 1
+        },
+        move: { enable: true, speed: 1.5 }
+      },
+      interactivity: {
+        detect_on: "canvas",
+        events: {
+          onhover: { enable: true, mode: "grab" },
+          onclick: { enable: true, mode: "push" }
+        },
+        modes: {
+          grab: { distance: 140, line_linked: { opacity: 0.5 } },
+          push: { particles_nb: 4 }
+        }
+      },
+      retina_detect: true
+    });
+
+    // Smooth scroll
+    const lenis = new Lenis();
+    function raf(time) {
+      lenis.raf(time);
+      requestAnimationFrame(raf);
+    }
+    requestAnimationFrame(raf);
+
+    // GSAP text animation
+    gsap.to("#titleText", { opacity: 1, y: -20, duration: 1, delay: 0.3 });
+    gsap.to("#subText", { opacity: 1, y: -10, duration: 1, delay: 0.8 });
+
+    // Form handler
+    const form = document.getElementById("waitlistForm");
+    const thankYou = document.getElementById("thankYou");
+    form.addEventListener("submit", (e) => {
+      e.preventDefault();
+      anime({ targets: "#submitBtn", scale: [1, 1.05, 1], duration: 300 });
+      setTimeout(() => {
+        form.style.display = "none";
+        thankYou.classList.remove("hidden");
+        anime({ targets: "#thankYou", opacity: [0, 1], translateY: [-10, 0], duration: 500 });
+      }, 500);
+    });
+  </script>
+</body>
+</html>

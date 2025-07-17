@@ -1,0 +1,268 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>KYRO P2P</title>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" />
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: 'Segoe UI', sans-serif;
+      background-color: #f3f4f6;
+      min-height: 100vh;
+      overflow-x: hidden;
+    }
+
+    header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      background-color: hsla(266, 61%, 48%, 1);
+      color: white;
+      padding: 12px 20px;
+    }
+
+    .header-left {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .header-img {
+      width: 40px;
+      height: 40px;
+      background-color: hsla(114, 66%, 41%, 1);
+      border-radius: 50%;
+    }
+
+    h1 {
+      font-size: 20px;
+    }
+
+    .menu-btn,
+    .sidebar-btn,
+    .close-btn {
+      font-size: 16px;
+      background: white;
+      color: hsla(266, 61%, 48%, 1);
+      border: none;
+      padding: 8px 12px;
+      border-radius: 5px;
+      cursor: pointer;
+    }
+
+    nav.menu,
+    aside.sidebar {
+      position: fixed;
+      background-color: white;
+      box-shadow: 0 0 10px rgba(0,0,0,0.1);
+      transition: transform 0.3s ease;
+      z-index: 999;
+      height: 100%;
+      overflow-y: auto;
+    }
+
+    nav.menu {
+      top: 0;
+      right: 0;
+      width: 280px;
+      transform: translateX(100%);
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+    }
+
+    aside.sidebar {
+      top: 0;
+      left: 0;
+      width: 250px;
+      transform: translateX(-100%);
+    }
+
+    nav ul,
+    aside ul {
+      list-style: none;
+      margin-top: 20px;
+      padding: 0 20px;
+    }
+
+    nav a,
+    aside a {
+      display: block;
+      padding: 10px 0;
+      color: #111;
+      text-decoration: none;
+      font-weight: 500;
+    }
+
+    .footer-buttons {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+      justify-content: center;
+      padding: 20px;
+      border-top: 1px solid #eee;
+      margin-top: auto;
+    }
+
+    .footer-buttons button {
+      flex: 1 1 40%;
+      padding: 10px 12px;
+      background-color: #4f46e5;
+      color: white;
+      border: none;
+      border-radius: 6px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 6px;
+      cursor: pointer;
+      font-size: 14px;
+    }
+
+    .footer-buttons button i {
+      font-size: 16px;
+    }
+
+    .active-menu {
+      transform: translateX(0) !important;
+    }
+
+    .active-sidebar {
+      transform: translateX(0) !important;
+    }
+
+    .sidebar-toggle-container {
+      margin: 12px 20px;
+    }
+
+    marquee {
+      padding: 10px;
+      background: #e0e7ff;
+      color: #1e3a8a;
+      font-weight: bold;
+      border-radius: 5px;
+      margin: 10px 20px;
+    }
+
+    .main-content {
+      padding: 20px;
+    }
+
+    @media (max-width: 600px) {
+      .footer-buttons {
+        flex-direction: column;
+      }
+
+      .footer-buttons button {
+        flex: 1 1 100%;
+      }
+
+      nav.menu,
+      aside.sidebar {
+        width: 85%;
+      }
+
+      h1 {
+        font-size: 18px;
+      }
+
+      .menu-btn,
+      .sidebar-btn {
+        font-size: 14px;
+        padding: 6px 10px;
+      }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Header -->
+  <header>
+    <div class="header-left">
+      <img src="ex.png" alt="P2P" class="header-img" />
+      <h1>P2P</h1>
+    </div>
+    <button class="menu-btn" id="menuToggleBtn" title="Open Menu">
+      <i class="fas fa-bars"></i>
+    </button>
+  </header>
+
+  <!-- Sidebar Toggle -->
+  <div class="sidebar-toggle-container">
+    <button class="sidebar-btn" id="sidebarToggleBtn" title="Open Sidebar">
+      <i class="fas fa-bars"></i> Sidebar
+    </button>
+  </div>
+
+  <!-- Right Menu (Hamburger Menu) -->
+  <nav class="menu" id="menu">
+    <div>
+      <button class="close-btn" onclick="toggleMenu()">
+        <i class="fas fa-times"></i> Close
+      </button>
+      <ul>
+        <li><a href="home.html">HOME</a></li>
+        <li><a href="waitlist.html">Waitlist</a></li>
+        <li><a href="ecosystem.html">Ecosystem</a></li>
+        <li><a href="airdrop.html">Airdrop</a></li>
+        <li><a href="whitepaper.html">Whitepaper</a></li>
+        <li><a href="about.html">About</a></li>
+      </ul>
+    </div>
+    <div class="footer-buttons">
+      <button title="Twitter"><i class="fab fa-twitter"></i>Twitter</button>
+      <button title="Discord"><i class="fab fa-discord"></i>Discord</button>
+      <button title="Farcaster"><i class="fa fa-paper-plane"></i>Farcaster</button>
+      <button title="Galxe"><i class="fas fa-globe"></i>Galxe</button>
+      <button title="Metamask"><i class="fab fa-ethereum"></i>Metamask</button>
+    </div>
+  </nav>
+
+  <!-- Left Sidebar -->
+  <aside class="sidebar" id="sidebar">
+    <button class="close-btn" onclick="toggleSidebar()">
+      <i class="fas fa-times"></i> Close
+    </button>
+    <ul>
+      <li><a href="profile.html">Profile</a></li>
+      <li><a href="liquidity.html">Liquidity</a></li>
+      <li><a href="activity.html">Activity</a></li>
+    </ul>
+  </aside>
+
+  <!-- Main Content -->
+  <div class="main-content">
+    <h1>KYRO P2P</h1>
+    <marquee behavior="scroll" direction="left">
+      This service only runs for OUT OF THE BOX GROUP, located on TELEGRAM.
+    </marquee>
+  </div>
+
+  <!-- JavaScript -->
+  <script>
+    const menuBtn = document.getElementById("menuToggleBtn");
+    const sidebarBtn = document.getElementById("sidebarToggleBtn");
+    const menu = document.getElementById("menu");
+    const sidebar = document.getElementById("sidebar");
+
+    function toggleMenu() {
+      menu.classList.toggle("active-menu");
+    }
+
+    function toggleSidebar() {
+      sidebar.classList.toggle("active-sidebar");
+    }
+
+    menuBtn.addEventListener("click", toggleMenu);
+    sidebarBtn.addEventListener("click", toggleSidebar);
+  </script>
+
+</body>
+</html>

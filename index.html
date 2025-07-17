@@ -1,0 +1,97 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>ECHO.AI — Image-Based AI Platform</title>
+
+  <!-- Google Font -->
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;700&display=swap" rel="stylesheet">
+
+  <!-- Tailwind CSS -->
+  <script src="https://cdn.tailwindcss.com"></script>
+
+  <!-- GSAP + Particles.js -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/gsap.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/particles.js@2.0.0/particles.min.js"></script>
+
+  <style>
+    body, html {
+      margin: 0;
+      padding: 0;
+      font-family: 'Inter', sans-serif;
+      height: 100%;
+      overflow: hidden;
+      background: #0f172a;
+    }
+    #particles-js {
+      position: fixed;
+      width: 100%;
+      height: 100%;
+      z-index: -1;
+    }
+    .glass {
+      background: rgba(255, 255, 255, 0.05);
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      backdrop-filter: blur(10px);
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Background -->
+  <div id="particles-js"></div>
+
+  <!-- Main Section -->
+  <section class="flex items-center justify-center min-h-screen px-6">
+    <div class="max-w-4xl text-center text-white glass p-10 rounded-2xl shadow-xl space-y-6">
+      <h1 class="text-4xl sm:text-6xl font-bold" id="headline">
+        🖼️ Welcome to <span class="text-indigo-500">ECHO.AI</span>
+      </h1>
+      <p class="text-lg sm:text-xl text-gray-300" id="subheadline">
+        Transform your imagination into images with AI.
+      </p>
+      <img src="https://via.placeholder.com/600x300.png?text=AI+Generated+Image" alt="AI Demo" class="rounded-xl mx-auto shadow border border-indigo-500" />
+      <a href="/waitlist.html" class="inline-block mt-6 px-6 py-3 rounded-lg bg-indigo-600 hover:bg-indigo-700 transition text-white font-semibold">
+        🚀 Join the Waitlist
+      </a>
+    </div>
+  </section>
+
+  <!-- Scripts -->
+  <script>
+    particlesJS("particles-js", {
+      particles: {
+        number: { value: 60, density: { enable: true, value_area: 800 } },
+        color: { value: "#3b82f6" },
+        shape: { type: "circle" },
+        opacity: { value: 0.5 },
+        size: { value: 3 },
+        line_linked: {
+          enable: true,
+          distance: 150,
+          color: "#3b82f6",
+          opacity: 0.4,
+          width: 1
+        },
+        move: { enable: true, speed: 1.5 }
+      },
+      interactivity: {
+        detect_on: "canvas",
+        events: {
+          onhover: { enable: true, mode: "grab" },
+          onclick: { enable: true, mode: "push" }
+        },
+        modes: {
+          grab: { distance: 140, line_linked: { opacity: 0.5 } },
+          push: { particles_nb: 4 }
+        }
+      },
+      retina_detect: true
+    });
+
+    gsap.from("#headline", { opacity: 0, y: -40, duration: 1.2, ease: "power2.out" });
+    gsap.from("#subheadline", { opacity: 0, y: 20, delay: 0.5, duration: 1, ease: "power2.out" });
+  </script>
+</body>
+</html>
