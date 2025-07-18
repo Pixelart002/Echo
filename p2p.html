@@ -1,26 +1,17 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>KYRO P2P Ultra UI with Menu</title>
+<!DOCTYPE html>      
+<html lang="en">      
+<head>      
+  <meta charset="UTF-8" />      
+  <meta name="viewport" content="width=device-width, initial-scale=1" />      
+  <title>KYRO P2P Ultra UI with Menu</title>      
 
-  <!-- Icons & Fonts -->
-  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" />
-  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;500;700&display=swap" rel="stylesheet" />
-
-  <!-- Particles.js -->
-  <script src="https://cdn.jsdelivr.net/npm/tsparticles@2.6.0/tsparticles.bundle.min.js"></script>
-  <!-- Confetti -->
-  <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.5.1/dist/confetti.browser.min.js"></script>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" />      
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;500;700&display=swap" rel="stylesheet" />      
+  <script src="https://cdn.jsdelivr.net/npm/tsparticles@2.6.0/tsparticles.bundle.min.js"></script>      
+  <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.5.1/dist/confetti.browser.min.js"></script>      
 
   <style>
-    /* Reset & Base */
-    * {
-      margin: 0;
-      padding: 0;
-      box-sizing: border-box;
-    }
+    * { margin: 0; padding: 0; box-sizing: border-box; }
     body {
       font-family: 'Poppins', sans-serif;
       height: 100vh;
@@ -36,16 +27,12 @@
       50% { background-position: 400% 0; }
       100% { background-position: 0 0; }
     }
-
-    /* Fullscreen Particles Container */
     #tsparticles {
       position: absolute;
       width: 100%;
       height: 100%;
       z-index: 1;
     }
-
-    /* Header */
     header {
       position: relative;
       z-index: 1100;
@@ -53,7 +40,7 @@
       justify-content: space-between;
       align-items: center;
       padding: 1rem 2rem;
-      background: rgba(0, 0, 0, 0.4);
+      background: rgba(70, 190, 230, 0.4);
       backdrop-filter: blur(10px);
     }
     .header-left {
@@ -66,6 +53,12 @@
       height: 40px;
       background: #6f3eff;
       border-radius: 50%;
+    }
+    .header-img img {
+      width: 40px;
+      height: 40px;
+      border-radius: 50%;
+      object-fit: cover;
     }
     header h1 {
       font-weight: 700;
@@ -85,8 +78,6 @@
     button.menu-btn:hover {
       background: rgba(0, 255, 255, 0.2);
     }
-
-    /* Sidebar Menu */
     .sidebar {
       position: fixed;
       top: 0;
@@ -102,9 +93,7 @@
       display: flex;
       flex-direction: column;
     }
-    .sidebar.active {
-      left: 0;
-    }
+    .sidebar.active { left: 0; }
     .sidebar ul {
       list-style: none;
       display: flex;
@@ -123,8 +112,6 @@
       text-shadow: 0 0 5px #00ffff;
       color: #fff;
     }
-
-    /* Overlay */
     .overlay {
       position: fixed;
       top: 0;
@@ -142,198 +129,112 @@
       opacity: 1;
       visibility: visible;
     }
-
-    /* Main */
     .main-content {
       position: relative;
       z-index: 10;
       display: flex;
       flex-direction: column;
       align-items: center;
-      justify-content: center;
+      justify-content: top;
       height: calc(100vh - 80px);
       padding: 1rem;
       text-align: center;
-    }
-
-    /* Connect Wallet */
-    .wallet-btn {
-      background: rgba(255, 255, 255, 0.15);
-      border: 1px solid rgba(255, 255, 255, 0.3);
-      padding: 0.6rem 1.2rem;
-      border-radius: 30px;
-      cursor: pointer;
-      backdrop-filter: blur(8px);
-      transition: 0.3s;
-      margin-bottom: 1rem;
-      font-weight: 500;
-      color: #fff;
-      font-size: 1rem;
-    }
-    .wallet-btn.connected {
-      background: #00ff88;
-      color: #000;
-      border-color: #00ff88;
-    }
-
-    /* Airdrop Box */
-    .airdrop {
-      position: relative;
-      width: 90%;
-      max-width: 380px;
-      padding: 2.5rem 1.5rem;
-      background: rgba(255, 255, 255, 0.1);
-      border: 1px solid rgba(255, 255, 255, 0.2);
-      backdrop-filter: blur(20px);
-      border-radius: 20px;
-      box-shadow: 0 8px 32px rgba(0, 200, 255, 0.2);
-      transform-style: preserve-3d;
-      transition: transform 0.3s ease;
-      color: #fff;
-    }
-    .airdrop:hover {
-      transform: perspective(600px) rotateX(5deg) rotateY(5deg) scale(1.02);
-    }
-    .airdrop h2 {
-      font-size: 1.5rem;
-      margin-bottom: 0.5rem;
-      color: #00ffe5;
-      text-shadow: 0 0 10px #00ffe5aa;
-    }
-    .airdrop p {
-      font-size: 1rem;
-      margin-bottom: 1.5rem;
-    }
-    .airdrop span {
-      color: #ffd700;
-      font-weight: 700;
-      font-size: 1.2rem;
-    }
-
-    /* Progress Bar */
-    .progress {
+      overflow-y: auto;
       width: 100%;
-      height: 6px;
-      background: rgba(255, 255, 255, 0.2);
-      border-radius: 3px;
-      overflow: hidden;
-      margin-bottom: 1rem;
-      opacity: 0;
-      transition: opacity 0.3s;
     }
-    .progress .bar {
-      height: 100%;
-      width: 0;
-      background: #00ff88;
-      transition: width 1.5s ease;
-    }
-
-    /* Claim Button */
-    .airdrop button.claim-btn {
-      background: rgba(255, 255, 255, 0.15);
-      border: 1px solid rgba(255, 255, 255, 0.3);
-      padding: 0.8rem 2rem;
-      border-radius: 12px;
-      cursor: pointer;
-      backdrop-filter: blur(10px);
-      font-size: 1rem;
-      font-weight: 600;
-      transition: all 0.3s;
-      box-shadow: 0 0 15px rgba(0, 255, 255, 0.3);
-      color: #fff;
-    }
-    .airdrop button.claim-btn:hover {
-      background: rgba(0, 255, 255, 0.2);
-      box-shadow: 0 0 25px rgba(0, 255, 255, 0.6);
-      transform: scale(1.05);
-    }
-    .airdrop button.claimed {
-      background: #00ff88;
-      color: #000;
-      cursor: default;
-      box-shadow: none;
-      border-color: #00ff88;
-    }
-
-    /* Modal Popup */
-    .modal {
-      position: fixed;
-      top: 0;
-      left: 0;
-      width: 100%;
-      height: 100%;
-      display: none;
-      justify-content: center;
-      align-items: center;
-      background: rgba(0, 0, 0, 0.7);
-      backdrop-filter: blur(5px);
-      z-index: 1300;
-    }
-    .modal .content {
-      background: rgba(255, 255, 255, 0.1);
-      padding: 2rem;
-      border-radius: 16px;
-      text-align: center;
-      border: 1px solid rgba(255, 255, 255, 0.2);
-      backdrop-filter: blur(15px);
-      max-width: 320px;
-      width: 90%;
-      animation: modalIn 0.4s ease forwards;
-      color: #00ffe5;
-    }
-    .modal h3 {
-      font-size: 1.4rem;
-      margin-bottom: 1rem;
-    }
-    .modal button {
-      margin-top: 1rem;
-      padding: 0.7rem 1.4rem;
-      border: none;
+    .task-json-container code {
+      display: block;
+      background: #111;
+      color: #00ffff;
+      padding: 1rem;
       border-radius: 8px;
-      cursor: pointer;
+      margin-bottom: 1rem;
+      white-space: pre-wrap;
+      font-family: monospace;
+      font-size: 0.9rem;
+    }
+    .rendered-tasks {
+      margin-top: 2rem;
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 1.5rem;
+      width: 100%;
+      max-width: 900px;
+    }
+    .rendered-tasks > .task:last-child:nth-child(odd) {
+      grid-column: 1 / -1;
+      font-size: 1.1rem;
+      padding: 1.5rem 2rem;
+    }
+    .task {
+      background: rgba(255, 255, 255, 0.05);
+      border: 1px solid #00ffff;
+      border-radius: 10px;
+      padding: 1.2rem 1.5rem;
+      color: #fff;
+      box-shadow: 0 0 10px rgba(0, 255, 255, 0.1);
+      text-align: left;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+    }
+    .task-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 0.5rem;
+    }
+    .task-header h3 {
+      margin: 0;
+      color: #00ffff;
+      font-size: 1.2rem;
+      font-weight: 700;
+    }
+    .task-header button {
       background: #00ffff;
+      border: none;
       color: #000;
-      font-weight: 600;
-      transition: 0.3s;
+      font-weight: bold;
+      padding: 0.5rem 1rem;
+      border-radius: 5px;
+      cursor: pointer;
+      font-size: 0.9rem;
+      white-space: nowrap;
+      transition: background 0.3s ease;
     }
-    .modal button:hover {
-      background: #00e6e6;
-      transform: scale(1.05);
+    .task-header button:hover {
+      background: #33ffff;
     }
-
-    @keyframes modalIn {
-      from {
-        transform: translateY(20px);
-        opacity: 0;
-      }
-      to {
-        transform: translateY(0);
-        opacity: 1;
-      }
+    .task p {
+      color: #ccc;
+      margin-top: 0.3rem;
+      font-size: 0.95rem;
     }
-
-    /* Responsive */
     @media (max-width: 600px) {
-      .sidebar {
-        width: 70%;
+      .rendered-tasks {
+        grid-template-columns: 1fr;
+      }
+      .rendered-tasks > .task:last-child:nth-child(odd) {
+        grid-column: auto;
+        font-size: 1.1rem;
+        padding: 1.5rem 1rem;
       }
     }
   </style>
 </head>
 <body>
-  <!-- Particles Container -->
   <div id="tsparticles"></div>
 
-  <!-- Header -->
   <header>
     <div class="header-left">
-      <div class="header-img"></div>
-      <h1>KYRO P2P Ultra</h1>
+      <div class="header-img">
+        <img src="/Screenshot_2025-06-17-22-47-06-40_948cd9899890cbd5c2798760b2b95377.jpg" alt="echo-image">
+      </div>
+      <h1>ECHO</h1>
     </div>
     <button class="menu-btn" id="menuBtn" aria-label="Toggle menu"><i class="fas fa-bars"></i></button>
   </header>
 
-  <!-- Sidebar -->
   <nav class="sidebar" id="sidebar" aria-label="Sidebar navigation">
     <ul>
       <li><a href="#">🏠 Home</a></li>
@@ -345,37 +246,32 @@
   </nav>
   <div class="overlay" id="overlay"></div>
 
-  <!-- Main Content -->
   <div class="main-content">
-    <!-- Wallet Connect -->
-    <button class="wallet-btn" id="walletBtn"><i class="fab fa-ethereum"></i> Connect Wallet</button>
-
-    <!-- Airdrop Box -->
-    <div class="airdrop" role="region" aria-label="Airdrop section">
-      <h2>🎁 Mil Gya Airdrop!</h2>
-      <p>You’ve been allocated <span>1 BTC</span></p>
-      <div class="progress" aria-hidden="true"><div class="bar"></div></div>
-      <button class="claim-btn" id="claimBtn" aria-live="polite">Claim Now</button>
+    <div class="task-json-container">
+      <code class="task-json">
+      {
+  "Title": "Follow on Twitter",
+  "Button": "Follow",
+  "Comment": "Limited time offer!",
+  "Script": "(function(){const btn=event.target;if(btn.textContent.trim()===\"Follow\"){window.open('https://x.com/vk76321?s=09','_blank');setTimeout(()=>{if(confirm(\"Did you follow @vk76321 on Twitter?\")){btn.textContent=\"Claim Now\";alert(\"Thank you for following! Now click 'Claim Now'\");}else{alert(\"Please follow @vk76321 first to claim!\");}},2000);}else if(btn.textContent.trim()===\"Claim Now\"){confetti({particleCount:100,spread:90});alert(\"Congrats! You claimed successfully.\");}})();"
+}
+      </code>
+      <code class="task-json">
+{
+"Title": "Join KYRO Beta",
+"Button": "Join Waitlist",
+"Comment": "Be the first to test features!",
+"Script": "(function(){const btn=event.target;if(btn.textContent.trim()===\"Join Waitlist\"){window.open('/waitlist.html','_blank');setTimeout(()=>{if(confirm(\"Did you join the KYRO Beta waitlist?\")){btn.textContent=\"Claim Now\";alert(\"Thank you! Now you can claim your reward.\");}else{alert(\"Please join the waitlist first to claim.\");}},2000);}else if(btn.textContent.trim()===\"Claim Now\"){confetti({particleCount:100,spread:90});alert(\"Congrats! You claimed successfully.\");}})();"
+}
+      </code>
     </div>
-  </div>
-
-  <!-- Modal Popup -->
-  <div class="modal" id="modal" role="dialog" aria-modal="true" aria-labelledby="modalTitle" aria-describedby="modalDesc">
-    <div class="content">
-      <h3 id="modalTitle">✅ Airdrop Claimed!</h3>
-      <p id="modalDesc">You successfully claimed <strong>1 BTC</strong>.</p>
-      <button onclick="closeModal()" aria-label="Close modal">Close</button>
-    </div>
+    <div class="rendered-tasks"></div>
   </div>
 
   <script>
-    // Particles.js init
     tsParticles.load("tsparticles", {
       fpsLimit: 60,
-      interactivity: {
-        events: { onHover: { enable: true, mode: "repulse" } },
-        modes: { repulse: { distance: 100 } }
-      },
+      interactivity: { events: { onHover: { enable: true, mode: "repulse" } }, modes: { repulse: { distance: 100 } } },
       particles: {
         color: { value: "#00ffff" },
         links: { color: "#00ffff", distance: 120, enable: true, opacity: 0.2, width: 1 },
@@ -386,67 +282,70 @@
       }
     });
 
-    // Sidebar toggle
     const menuBtn = document.getElementById('menuBtn');
     const sidebar = document.getElementById('sidebar');
     const overlay = document.getElementById('overlay');
-
     function toggleSidebar() {
       sidebar.classList.toggle('active');
       overlay.classList.toggle('active');
     }
     menuBtn.addEventListener('click', toggleSidebar);
     overlay.addEventListener('click', toggleSidebar);
-
-    // Close sidebar on link click
     sidebar.querySelectorAll('a').forEach(link => {
       link.addEventListener('click', () => {
         sidebar.classList.remove('active');
         overlay.classList.remove('active');
       });
     });
+  </script>
 
-    // Wallet Connect Simulator
-    const walletBtn = document.getElementById("walletBtn");
-    let connected = false;
-    walletBtn.addEventListener("click", () => {
-      connected = !connected;
-      walletBtn.textContent = connected ? "🦊 Wallet Connected" : "Connect Wallet";
-      walletBtn.classList.toggle("connected", connected);
-    });
+  <script>
+    const codeBlocks = document.querySelectorAll('.task-json');
+    const renderedContainer = document.querySelector('.rendered-tasks');
 
-    // Claim Logic
-    const claimBtn = document.getElementById("claimBtn");
-    const progressBar = document.querySelector(".progress");
-    const bar = document.querySelector(".bar");
-    const modal = document.getElementById("modal");
+    codeBlocks.forEach(block => {
+      try {
+        const json = JSON.parse(block.textContent.trim());
+        const taskDiv = document.createElement('div');
+        taskDiv.className = 'task';
 
-    claimBtn.addEventListener("click", () => {
-      if (!connected) {
-        alert("Please connect your wallet first!");
-        return;
+        const headerDiv = document.createElement('div');
+        headerDiv.className = 'task-header';
+
+        const titleEl = document.createElement('h3');
+        titleEl.textContent = json.Title || 'Untitled';
+
+        const btnEl = document.createElement('button');
+        btnEl.textContent = json.Button || 'Click';
+
+        btnEl.addEventListener('click', () => {
+          if (json.Script && typeof json.Script === 'string' && json.Script.trim()) {
+            try {
+              new Function(json.Script)();
+            } catch (e) {
+              alert("Script error: " + e.message);
+            }
+          } else {
+            alert("✅ Button clicked: " + btnEl.textContent);
+          }
+        });
+
+        headerDiv.appendChild(titleEl);
+        headerDiv.appendChild(btnEl);
+
+        const commentEl = document.createElement('p');
+        commentEl.textContent = json.Comment || '';
+
+        taskDiv.appendChild(headerDiv);
+        taskDiv.appendChild(commentEl);
+        renderedContainer.appendChild(taskDiv);
+
+        block.style.display = "none";
+      } catch (err) {
+        block.style.color = "red";
+        block.textContent = "❌ Invalid JSON";
       }
-      claimBtn.disabled = true;
-      claimBtn.textContent = "Processing...";
-      progressBar.style.opacity = 1;
-      bar.style.width = "100%";
-
-      setTimeout(() => {
-        claimBtn.classList.add("claimed");
-        claimBtn.textContent = "Claimed";
-        progressBar.style.opacity = 0;
-
-        // Confetti
-        confetti({ particleCount: 150, spread: 60, origin: { y: 0.6 } });
-
-        // Show Modal
-        modal.style.display = "flex";
-      }, 1800);
     });
-
-    function closeModal() {
-      modal.style.display = "none";
-    }
   </script>
 </body>
 </html>
