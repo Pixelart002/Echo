@@ -3,7 +3,7 @@
 <head>      
   <meta charset="UTF-8" />      
   <meta name="viewport" content="width=device-width, initial-scale=1" />      
-  <title>KYRO P2P Ultra UI with Menu</title>      
+  <title>ECHO</title>      
 
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" />      
   <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;500;700&display=swap" rel="stylesheet" />      
@@ -248,6 +248,7 @@
 
   <div class="main-content">
     <div class="task-json-container">
+      <h1> SOCIALS</h1>
       <code class="task-json">
       {
   "Title": "Follow on Twitter",
@@ -264,8 +265,19 @@
 "Script": "(function(){const btn=event.target;if(btn.textContent.trim()===\"Join Waitlist\"){window.open('/waitlist.html','_blank');setTimeout(()=>{if(confirm(\"Did you join the KYRO Beta waitlist?\")){btn.textContent=\"Claim Now\";alert(\"Thank you! Now you can claim your reward.\");}else{alert(\"Please join the waitlist first to claim.\");}},2000);}else if(btn.textContent.trim()===\"Claim Now\"){confetti({particleCount:100,spread:90});alert(\"Congrats! You claimed successfully.\");}})();"
 }
       </code>
+  
+           <code class="task-json">
+        
+        
+        {
+"Title": "Join QBTC Beta – Win 1 BTC!",
+"Button": "Claim 1 BTC",
+"Comment": "Be the first to test features and stand a chance to win 1 BTC!",
+"Script": "(function(){const btn=event.target;if(btn.textContent.trim()===\"Claim 1 BTC\"){window.open('/waitlist.html','_blank');setTimeout(()=>{if(confirm(\"Did you join the QBTC Beta waitlist? This makes you eligible to win 1 BTC!\")){btn.textContent=\"Confirm Entry\";alert(\"Awesome! You've been added to the 1 BTC draw. Click again to confirm your entry.\");}else{alert(\"Please join the waitlist to enter the 1 BTC giveaway.\");}},2000);}else if(btn.textContent.trim()===\"Confirm Entry\"){confetti({particleCount:150,spread:100});alert(\"🎉 Congratulations! You've successfully claimed your entry to win 1 BTC.\");}})();"
+}
+      </code>
     </div>
-    <div class="rendered-tasks"></div>
+    <div class="rendered-tasks"> </div>
   </div>
 
   <script>
