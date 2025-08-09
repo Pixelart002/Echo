@@ -1,0 +1,465 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8"/>
+  <title>Client TTS (fixed) — record • train • speak</title>
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <style>
+    body{font-family:system-ui,Segoe UI,Roboto,Arial;margin:16px;background:#0b0b0b;color:#eaeaea}
+    button{padding:8px 12px;margin:6px;border-radius:6px;border:none;background:#1f6feb;color:white}
+    #samples{max-height:220px;overflow:auto;border:1px solid #333;padding:8px;margin:8px 0;border-radius:6px}
+    input, textarea{width:100%;padding:8px;border-radius:6px;border:1px solid #333;background:#111;color:#eee}
+    label{font-size:13px;color:#aaa}
+    .row{display:flex;gap:8px}
+    .col{flex:1}
+    small{color:#888}
+    .status{margin:8px 0;color:#9fd}
+    .warn{color:#ffb86b}
+    .err{color:#ff6b6b}
+  </style>
+
+  <!-- TF.js (small, stable CDN). Use a specific version to avoid breaking changes. -->
+  <script src="https://cdn.jsdelivr.net/npm/@tensorflow/tfjs@4.15.0/dist/tf.min.js"></script>
+</head>
+<body>
+  <h2>Client TTS — record • train • speak (fixed)</h2>
+  <p><small>All in-browser. If something fails, follow the instructions in the status box below.</small></p>
+
+  <div id="contextWarning" class="warn"></div>
+
+  <div>
+    <label>Transcript for next recording</label>
+    <input id="transcript" placeholder="Type the exact words you'll speak (max 64 chars)"/>
+  </div>
+
+  <div class="row" style="margin-top:8px;">
+    <button id="recordBtn">Record 3s</button>
+    <button id="addSilenceBtn">Add silence sample</button>
+    <button id="clearSamplesBtn" style="background:#c04">Clear samples</button>
+  </div>
+
+  <div id="samples">
+    <strong>Samples (0)</strong>
+    <ul id="sampleList"></ul>
+  </div>
+
+  <div class="row">
+    <div class="col">
+      <label>Model training params</label>
+      <div style="display:flex;gap:8px">
+        <input id="epochs" type="number" value="30" style="width:80px"/><small>epochs</small>
+        <input id="batch" type="number" value="4" style="width:80px"/><small>batch</small>
+      </div>
+      <div style="margin-top:6px">
+        <button id="trainBtn">Train model</button>
+        <button id="saveModelBtn">Save model</button>
+        <button id="loadModelBtn">Load model</button>
+      </div>
+    </div>
+
+    <div class="col">
+      <label>Inference</label>
+      <textarea id="prompt" rows="3" placeholder="Type text to synthesize (use simple characters only)"></textarea>
+      <div style="margin-top:6px">
+        <button id="speakBtn">Synthesize & Play</button>
+        <button id="downloadWavBtn">Download last audio</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="status" id="status">Status: initialising...</div>
+
+<script>
+/*
+Fixed, robust client-side TTS demo.
+- Avoids common runtime errors by guarding APIs and adding helpful recover steps.
+- If you open via file:// you will see clear instructions to run a local server or package as WebView.
+*/
+
+const SAMPLE_RATE = 16000;
+const AUDIO_DURATION = 1.0; // seconds
+const WAVE_LEN = Math.floor(SAMPLE_RATE * AUDIO_DURATION);
+const MAX_CHARS = 64;
+const CHARSET = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789 .,!?'-";
+const CHAR_TO_IDX = {};
+for(let i=0;i<CHARSET.length;i++) CHAR_TO_IDX[CHARSET[i]] = i+1; // 0 pad
+
+let audioCtx = null;
+let mediaStream = null;
+let samples = []; // {text, audio Float32Array}
+let currentModel = null;
+let latestAudioBuffer = null;
+
+const statusEl = document.getElementById('status');
+const ctxWarn = document.getElementById('contextWarning');
+
+function setStatus(msg, level='info'){
+  statusEl.textContent = 'Status: '+msg;
+  statusEl.className = 'status ' + (level==='err' ? 'err' : (level==='warn' ? 'warn' : ''));
+  console.log(msg);
+}
+
+// Detect insecure context or file:// opening
+function checkContext() {
+  try {
+    const isSecure = (location.protocol === 'https:' || location.hostname === 'localhost' || location.protocol === 'http:');
+    if (location.protocol === 'file:') {
+      ctxWarn.innerHTML = "You're opening this page with <code>file://</code>. Chrome has restrictions with file URLs (IndexedDB, decodeAudioData). <strong>Run a local server</strong> instead:<br><code>python3 -m http.server 8080</code> or <code>npx serve .</code><br>Or package as an Android WebView/PWA.";
+      setStatus('Running from file:// — some features may fail. See instructions above.', 'warn');
+      return false;
+    } else if (!isSecure && location.hostname !== 'localhost') {
+      ctxWarn.innerHTML = "You're using an insecure context. Some APIs (e.g. microphone) may require HTTPS. Use <code>http://localhost</code> or HTTPS or package as WebView.";
+      setStatus('Running in insecure context — mic/permissions may fail.', 'warn');
+      return true;
+    } else {
+      ctxWarn.innerText = '';
+      setStatus('Ready');
+      return true;
+    }
+  } catch(e){
+    console.warn('context check failed', e);
+    setStatus('Context check failed', 'warn');
+    return false;
+  }
+}
+checkContext();
+
+// Safe AudioContext creation with fallback
+function ensureAudioContext() {
+  if (audioCtx) return audioCtx;
+  try {
+    audioCtx = new (window.AudioContext || window.webkitAudioContext)({sampleRate: SAMPLE_RATE});
+    return audioCtx;
+  } catch (e) {
+    setStatus('Failed to create AudioContext: '+e.message, 'err');
+    throw e;
+  }
+}
+
+// Safe microphone access
+async function ensureMic() {
+  if (mediaStream) return mediaStream;
+  try {
+    mediaStream = await navigator.mediaDevices.getUserMedia({ audio: true });
+    return mediaStream;
+  } catch (e) {
+    setStatus('Microphone access failed: '+ (e.message || e), 'err');
+    throw e;
+  }
+}
+
+// Record a fixed-length clip and return Float32Array at SAMPLE_RATE length WAVE_LEN
+async function recordSeconds(seconds=3) {
+  try {
+    await ensureMic();
+    setStatus('Recording for '+seconds+'s...');
+    // We'll use MediaRecorder + decodeAudioData fallback — fairly robust across browsers
+    const stream = mediaStream;
+    const mime = MediaRecorder.isTypeSupported('audio/webm;codecs=opus') ? 'audio/webm;codecs=opus' : 'audio/webm';
+    const recorder = new MediaRecorder(stream, { mimeType: mime });
+    const chunks = [];
+    recorder.ondataavailable = e => { if (e.data && e.data.size) chunks.push(e.data); };
+    recorder.start();
+    await new Promise(r => setTimeout(r, Math.round(seconds*1000)));
+    recorder.stop();
+
+    const blob = await new Promise((resolve) => {
+      recorder.onstop = () => resolve(new Blob(chunks, {type: mime}));
+      // fallback: timeout
+      setTimeout(()=> {
+        if (chunks.length && !recorder.state || recorder.state!=='recording') return;
+        try { recorder.stop(); } catch(_) {}
+      }, 500);
+    });
+
+    setStatus('Decoding recorded audio...');
+    const ab = await blob.arrayBuffer();
+
+    // decodeAudioData can throw in some file:// contexts; handle both promise and callback forms
+    const actx = ensureAudioContext();
+    let decoded = null;
+    try {
+      decoded = await actx.decodeAudioData(ab.slice(0)); // use slice to ensure transferable copy
+    } catch (e) {
+      // Older fallback
+      decoded = await new Promise((resolve, reject) => {
+        actx.decodeAudioData(ab.slice(0), resolve, err => reject(err));
+      });
+    }
+
+    // convert to mono
+    let channelData = decoded.getChannelData(0);
+    if (decoded.numberOfChannels > 1) {
+      const ch1 = decoded.getChannelData(0);
+      const ch2 = decoded.getChannelData(1);
+      channelData = new Float32Array(Math.max(ch1.length, ch2.length));
+      for (let i=0;i<channelData.length;i++){
+        const a = ch1[i]||0, b = ch2[i]||0;
+        channelData[i] = (a + b) * 0.5;
+      }
+    }
+
+    // resample if needed using OfflineAudioContext (robust)
+    let floatArr = channelData;
+    if (decoded.sampleRate !== SAMPLE_RATE) {
+      const offline = new OfflineAudioContext(1, Math.ceil(decoded.duration * SAMPLE_RATE), SAMPLE_RATE);
+      // create buffer with original samples
+      const buffer = offline.createBuffer(1, channelData.length, decoded.sampleRate);
+      buffer.copyToChannel(channelData, 0);
+      const src = offline.createBufferSource(); src.buffer = buffer; src.connect(offline.destination); src.start();
+      const rendered = await offline.startRendering();
+      floatArr = rendered.getChannelData(0);
+    }
+
+    // pad/trim to WAVE_LEN
+    const out = new Float32Array(WAVE_LEN).fill(0);
+    if (floatArr.length >= WAVE_LEN) out.set(floatArr.subarray(0, WAVE_LEN));
+    else out.set(floatArr);
+
+    setStatus('Recording decoded');
+    return out;
+
+  } catch (e) {
+    setStatus('Recording error: ' + (e.message||e), 'err');
+    throw e;
+  }
+}
+
+// utilities for UI
+function refreshSampleList(){
+  const ul = document.getElementById('sampleList');
+  ul.innerHTML = '';
+  samples.forEach((s,i)=>{
+    const li = document.createElement('li');
+    li.style.marginBottom='6px';
+    li.innerHTML = `<b>${i+1}.</b> "${escapeHtml(s.text)}" — <button data-i="${i}" class="playSample">Play</button> <button data-i="${i}" class="delSample">Delete</button>`;
+    ul.appendChild(li);
+  });
+  document.querySelectorAll('.playSample').forEach(btn => btn.onclick = async (ev)=>{
+    const i = +ev.target.dataset.i;
+    playFloat32(samples[i].audio);
+  });
+  document.querySelectorAll('.delSample').forEach(btn => btn.onclick = (ev)=>{
+    const i = +ev.target.dataset.i;
+    samples.splice(i,1);
+    refreshSampleList();
+  });
+  document.querySelector('#samples strong').textContent = `Samples (${samples.length})`;
+}
+function escapeHtml(s){ return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;'); }
+
+// UI events with guards
+document.getElementById('recordBtn').onclick = async ()=>{
+  try {
+    const text = (document.getElementById('transcript').value || '').slice(0,MAX_CHARS).trim();
+    if(!text){ alert('Type the transcript text first'); return; }
+    const wav = await recordSeconds(3);
+    samples.push({text, audio: wav});
+    refreshSampleList();
+  } catch(e){ console.error(e); }
+};
+document.getElementById('addSilenceBtn').onclick = ()=>{
+  const text = (document.getElementById('transcript').value || '').slice(0,MAX_CHARS).trim();
+  const wav = new Float32Array(WAVE_LEN).fill(0);
+  samples.push({text: text || 'silence', audio: wav});
+  refreshSampleList();
+};
+document.getElementById('clearSamplesBtn').onclick = ()=>{
+  if(!confirm('Clear all samples?')) return;
+  samples = [];
+  refreshSampleList();
+};
+
+// simple model => char sequence -> waveform (tanh)
+function textToSeq(text){
+  text = (text||'').slice(0,MAX_CHARS);
+  const arr = new Array(MAX_CHARS).fill(0);
+  for(let i=0;i<text.length;i++){
+    arr[i] = CHAR_TO_IDX[text[i]] || 0;
+  }
+  return arr;
+}
+function buildModel(){
+  // small and safe model size
+  const input = tf.input({shape: [MAX_CHARS], dtype: 'int32'});
+  const vocabSize = CHARSET.length + 2;
+  const embedDim = 32;
+  const embed = tf.layers.embedding({inputDim: vocabSize, outputDim: embedDim, inputLength: MAX_CHARS}).apply(input);
+  const flat = tf.layers.flatten().apply(embed);
+  const d1 = tf.layers.dense({units:256, activation:'relu'}).apply(flat);
+  const d2 = tf.layers.dense({units:512, activation:'relu'}).apply(d1);
+  const out = tf.layers.dense({units: WAVE_LEN, activation:'tanh'}).apply(d2);
+  const model = tf.model({inputs: input, outputs: out});
+  model.compile({optimizer: tf.train.adam(1e-3), loss: 'meanSquaredError'});
+  return model;
+}
+
+// TRAIN
+document.getElementById('trainBtn').onclick = async ()=>{
+  if (typeof tf === 'undefined') { setStatus('TensorFlow.js not loaded', 'err'); return; }
+  if(samples.length < 1){ alert('Record at least one sample'); return; }
+  setStatus('Preparing dataset...');
+  try {
+    const X = [], Y = [];
+    for(const s of samples){
+      X.push(textToSeq(s.text));
+      Y.push(Array.from(s.audio));
+    }
+    const Xt = tf.tensor2d(X, [X.length, MAX_CHARS], 'int32');
+    const Yt = tf.tensor2d(Y, [Y.length, WAVE_LEN], 'float32');
+    setStatus('Building model...');
+    currentModel = buildModel();
+    const epochs = Math.max(1, parseInt(document.getElementById('epochs').value || '10'));
+    const batch = Math.max(1, parseInt(document.getElementById('batch').value || '2'));
+    setStatus('Training model...');
+    await currentModel.fit(Xt, Yt, {
+      epochs,
+      batchSize: batch,
+      callbacks: {
+        onEpochEnd: async (epoch, logs) => {
+          setStatus(`Epoch ${epoch+1}/${epochs} loss=${(logs.loss||0).toFixed(6)}`);
+          await tf.nextFrame();
+        }
+      }
+    });
+    setStatus('Training complete');
+    Xt.dispose(); Yt.dispose();
+    // cache a sample output
+    const seq = tf.tensor2d([textToSeq('hello')],[1,MAX_CHARS],'int32');
+    const pred = currentModel.predict(seq);
+    const arr = await pred.data();
+    latestAudioBuffer = Float32Array.from(arr);
+    seq.dispose(); pred.dispose();
+  } catch (e) {
+    console.error(e);
+    setStatus('Training error: ' + (e.message||e), 'err');
+    alert('Training failed — see console for details.');
+  }
+};
+
+// save / load (IndexedDB via tfjs)
+document.getElementById('saveModelBtn').onclick = async ()=>{
+  if(!currentModel){ alert('No model to save'); return; }
+  try {
+    setStatus('Saving model to IndexedDB...');
+    await currentModel.save('indexeddb://client-tts-model');
+    setStatus('Model saved');
+  } catch (e) {
+    console.error(e);
+    setStatus('Save failed: ' + (e.message||e),'err');
+    alert('Save failed. If you opened via file:// some browsers block IndexedDB. Run a local server or use WebView/PWA.');
+  }
+};
+document.getElementById('loadModelBtn').onclick = async ()=>{
+  try{
+    setStatus('Loading model from IndexedDB...');
+    currentModel = await tf.loadLayersModel('indexeddb://client-tts-model');
+    setStatus('Model loaded');
+  }catch(e){
+    console.error(e);
+    setStatus('Load failed: ' + (e.message||e),'err');
+    alert('Load failed. Maybe no saved model exists or IndexedDB is blocked. Run a local server or package as WebView.');
+  }
+};
+
+// inference & playback
+document.getElementById('speakBtn').onclick = async ()=>{
+  if(!currentModel){ alert('No model loaded/trained. Train or load a model first.'); return; }
+  const text = (document.getElementById('prompt').value || '').slice(0, MAX_CHARS);
+  if(!text){ alert('Type text to speak'); return; }
+  try {
+    setStatus('Synthesizing...');
+    const seq = tf.tensor2d([textToSeq(text)],[1,MAX_CHARS],'int32');
+    const pred = currentModel.predict(seq);
+    const arr = await pred.data();
+    seq.dispose(); pred.dispose();
+    latestAudioBuffer = Float32Array.from(arr);
+    playFloat32(latestAudioBuffer);
+    setStatus('Playing');
+  } catch (e) {
+    console.error(e);
+    setStatus('Synthesis error: ' + (e.message||e), 'err');
+  }
+};
+
+document.getElementById('downloadWavBtn').onclick = ()=>{
+  if(!latestAudioBuffer){ alert('No audio generated'); return; }
+  const wav = floatToWav(latestAudioBuffer, SAMPLE_RATE);
+  const blob = new Blob([wav], {type:'audio/wav'});
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a'); a.href = url; a.download = 'synth.wav'; a.click();
+};
+
+// play buffer
+function playFloat32(float32) {
+  try {
+    const actx = ensureAudioContext();
+    const buf = actx.createBuffer(1, float32.length, SAMPLE_RATE);
+    buf.getChannelData(0).set(float32);
+    const src = actx.createBufferSource();
+    src.buffer = buf;
+    src.connect(actx.destination);
+    src.start();
+  } catch (e) {
+    console.error('Playback failed', e);
+    setStatus('Playback failed: ' + (e.message||e), 'err');
+  }
+}
+
+// WAV encoder PCM16
+function floatToWav(float32, sampleRate){
+  const buffer = new ArrayBuffer(44 + float32.length * 2);
+  const view = new DataView(buffer);
+  function writeString(view, offset, string){
+    for (let i = 0; i < string.length; i++) view.setUint8(offset + i, string.charCodeAt(i));
+  }
+  let offset = 0;
+  writeString(view, offset, 'RIFF'); offset += 4;
+  view.setUint32(offset, 36 + float32.length * 2, true); offset += 4;
+  writeString(view, offset, 'WAVE'); offset += 4;
+  writeString(view, offset, 'fmt '); offset += 4;
+  view.setUint32(offset, 16, true); offset += 4;
+  view.setUint16(offset, 1, true); offset += 2; // PCM
+  view.setUint16(offset, 1, true); offset += 2; // channels
+  view.setUint32(offset, sampleRate, true); offset += 4;
+  view.setUint32(offset, sampleRate * 2, true); offset += 4;
+  view.setUint16(offset, 2, true); offset += 2;
+  view.setUint16(offset, 16, true); offset += 2;
+  writeString(view, offset, 'data'); offset += 4;
+  view.setUint32(offset, float32.length * 2, true); offset += 4;
+  for (let i = 0; i < float32.length; i++, offset += 2) {
+    let s = Math.max(-1, Math.min(1, float32[i]));
+    view.setInt16(offset, s < 0 ? s * 0x8000 : s * 0x7FFF, true);
+  }
+  return view;
+}
+
+// init
+(async function init() {
+  try {
+    // quick TF check
+    if (typeof tf === 'undefined') {
+      setStatus('TensorFlow.js missing. Check network connection or CDN blocking.', 'err');
+      return;
+    }
+    // warm up WebGL backend if available
+    try {
+      await tf.ready();
+      setStatus('TensorFlow ready. Backend: ' + tf.getBackend());
+    } catch (e) {
+      console.warn('tf.ready failed', e);
+      setStatus('TensorFlow failed to initialize: '+(e.message||e), 'err');
+      return;
+    }
+    // create AudioContext lazily when needed
+    ensureAudioContext();
+    setStatus('Ready');
+  } catch (e) {
+    console.error('Initialization error', e);
+    setStatus('Init error: ' + (e.message||e), 'err');
+  }
+})();
+
+</script>
+</body>
+</html>
