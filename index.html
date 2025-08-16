@@ -1,363 +1,604 @@
-<!DOCTYPE html>      
-<html lang="en">      
-<head>      
-  <meta charset="UTF-8" />      
-  <meta name="viewport" content="width=device-width, initial-scale=1" />      
-  <title>ECHO</title>      
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>KYRO — Production Final</title>
 
-  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" />      
-  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;500;700&display=swap" rel="stylesheet" />      
-  <script src="https://cdn.jsdelivr.net/npm/tsparticles@2.6.0/tsparticles.bundle.min.js"></script>      
-  <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.5.1/dist/confetti.browser.min.js"></script>      
+  <!-- Cinematic fonts -->
+  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,700;0,900;1,700&family=Cormorant+Garamond:wght@300;400;600&display=swap" rel="stylesheet">
+
+  <!-- Font Awesome -->
+  <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" rel="stylesheet">
+
+  <!-- Lenis (smooth scroll) -->
+  <script src="https://cdn.jsdelivr.net/npm/@studio-freight/lenis@1.0.27/bundled/lenis.min.js"></script>
+
+  <!-- Anime.js -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/animejs/3.2.1/anime.min.js"></script>
 
   <style>
-    * { margin: 0; padding: 0; box-sizing: border-box; }
-    body {
-      font-family: 'Poppins', sans-serif;
-      height: 100vh;
-      overflow: hidden;
-      position: relative;
-      background: linear-gradient(-45deg, #020202, #0a0a0a, #020202, #0a0a0a);
-      background-size: 400% 400%;
-      animation: bgAnim 15s ease infinite;
-      color: #fff;
+    :root{
+      --bg-1:#fbfbfd;
+      --bg-2:#f0f3f8;
+      --muted:#6b7280;
+      --accent-1:#6f4cff;
+      --accent-2:#61e1d9;
+      --accent-3:#facc15;
+      --glass: rgba(255,255,255,0.92);
+      --shadow: 0 12px 36px rgba(16,24,40,.06);
+      --card-radius:14px;
+      --drawer-width:360px;
+      --max-width:1200px;
+      --cart-key: kyro_cart_prod_v1;
     }
-    @keyframes bgAnim {
-      0% { background-position: 0 0; }
-      50% { background-position: 400% 0; }
-      100% { background-position: 0 0; }
+
+    *{box-sizing:border-box}
+    html,body{height:100%; margin:0; font-family:"Cormorant Garamond", serif; -webkit-font-smoothing:antialiased;}
+    body{
+      background: linear-gradient(135deg,var(--bg-1),var(--bg-2));
+      color:#071022;
     }
-    #tsparticles {
-      position: absolute;
-      width: 100%;
-      height: 100%;
-      z-index: 1;
-    }
-    header {
-      position: relative;
-      z-index: 1100;
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      padding: 1rem 2rem;
-      background: rgba(70, 190, 230, 0.4);
-      backdrop-filter: blur(10px);
-    }
-    .header-left {
-      display: flex;
-      align-items: center;
-      gap: 0.8rem;
-    }
-    .header-img {
-      width: 40px;
-      height: 40px;
-      background: #6f3eff;
-      border-radius: 50%;
-    }
-    .header-img img {
-      width: 40px;
-      height: 40px;
-      border-radius: 50%;
-      object-fit: cover;
-    }
-    header h1 {
-      font-weight: 700;
-      font-size: 1.2rem;
-      letter-spacing: 1px;
-    }
-    button.menu-btn {
-      background: rgba(255, 255, 255, 0.2);
-      padding: 0.5rem;
-      border-radius: 5px;
-      border: none;
-      cursor: pointer;
-      color: #00ffff;
-      font-size: 1.3rem;
-      transition: background 0.3s ease;
-    }
-    button.menu-btn:hover {
-      background: rgba(0, 255, 255, 0.2);
-    }
-    .sidebar {
-      position: fixed;
-      top: 0;
-      left: -250px;
-      width: 220px;
-      height: 100%;
-      background: rgba(0, 0, 0, 0.8);
-      backdrop-filter: blur(10px);
-      transition: left 0.3s ease;
-      z-index: 1200;
-      padding: 2rem 1rem;
-      box-shadow: 5px 0 15px rgba(0, 255, 255, 0.2);
-      display: flex;
-      flex-direction: column;
-    }
-    .sidebar.active { left: 0; }
-    .sidebar ul {
-      list-style: none;
-      display: flex;
-      flex-direction: column;
-      gap: 1.2rem;
-      margin-top: 3rem;
-    }
-    .sidebar ul li a {
-      color: #00ffff;
-      text-decoration: none;
-      font-weight: 500;
-      font-size: 1rem;
-      transition: 0.2s;
-    }
-    .sidebar ul li a:hover {
-      text-shadow: 0 0 5px #00ffff;
-      color: #fff;
-    }
-    .overlay {
-      position: fixed;
-      top: 0;
-      left: 0;
-      width: 100vw;
-      height: 100vh;
-      background: rgba(0, 0, 0, 0.6);
-      backdrop-filter: blur(2px);
-      opacity: 0;
-      visibility: hidden;
-      transition: opacity 0.3s ease;
-      z-index: 1100;
-    }
-    .overlay.active {
-      opacity: 1;
-      visibility: visible;
-    }
-    .main-content {
-      position: relative;
-      z-index: 10;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      justify-content: top;
-      height: calc(100vh - 80px);
-      padding: 1rem;
-      text-align: center;
-      overflow-y: auto;
-      width: 100%;
-    }
-    .task-json-container code {
-      display: block;
-      background: #111;
-      color: #00ffff;
-      padding: 1rem;
-      border-radius: 8px;
-      margin-bottom: 1rem;
-      white-space: pre-wrap;
-      font-family: monospace;
-      font-size: 0.9rem;
-    }
-    .rendered-tasks {
-      margin-top: 2rem;
-      display: grid;
-      grid-template-columns: repeat(2, 1fr);
-      gap: 1.5rem;
-      width: 100%;
-      max-width: 900px;
-    }
-    .rendered-tasks > .task:last-child:nth-child(odd) {
-      grid-column: 1 / -1;
-      font-size: 1.1rem;
-      padding: 1.5rem 2rem;
-    }
-    .task {
-      background: rgba(255, 255, 255, 0.05);
-      border: 1px solid #00ffff;
-      border-radius: 10px;
-      padding: 1.2rem 1.5rem;
-      color: #fff;
-      box-shadow: 0 0 10px rgba(0, 255, 255, 0.1);
-      text-align: left;
-      display: flex;
-      flex-direction: column;
-      justify-content: center;
-    }
-    .task-header {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      margin-bottom: 0.5rem;
-    }
-    .task-header h3 {
-      margin: 0;
-      color: #00ffff;
-      font-size: 1.2rem;
-      font-weight: 700;
-    }
-    .task-header button {
-      background: #00ffff;
-      border: none;
-      color: #000;
-      font-weight: bold;
-      padding: 0.5rem 1rem;
-      border-radius: 5px;
-      cursor: pointer;
-      font-size: 0.9rem;
-      white-space: nowrap;
-      transition: background 0.3s ease;
-    }
-    .task-header button:hover {
-      background: #33ffff;
-    }
-    .task p {
-      color: #ccc;
-      margin-top: 0.3rem;
-      font-size: 0.95rem;
-    }
-    @media (max-width: 600px) {
-      .rendered-tasks {
-        grid-template-columns: 1fr;
-      }
-      .rendered-tasks > .task:last-child:nth-child(odd) {
-        grid-column: auto;
-        font-size: 1.1rem;
-        padding: 1.5rem 1rem;
-      }
+
+    /* Loader */
+    #loader{ position:fixed; inset:0; display:grid; place-items:center; z-index:9999; background: linear-gradient(180deg, rgba(255,255,255,0.98), rgba(250,250,252,0.98)); }
+    #loader .logo{ font-family:"Playfair Display",serif; font-size:46px; font-weight:900; background:linear-gradient(90deg,var(--accent-1),var(--accent-2),var(--accent-3)); -webkit-background-clip:text; color:transparent; letter-spacing:.28em; }
+
+    /* Topbar */
+    .topbar{ position:sticky; top:0; z-index:120; display:flex; gap:12px; align-items:center; padding:12px 18px; background:var(--glass); border-bottom:1px solid rgba(16,24,40,.04); box-shadow:0 6px 18px rgba(16,24,40,.02); }
+    .topbar .left, .topbar .center, .topbar .right{ display:flex; align-items:center; gap:12px; }
+    .topbar .center{ flex:1; justify-content:center; }
+    .brand{ font-family:"Playfair Display",serif; font-weight:900; font-size:20px; letter-spacing:.22em; color:#071022; }
+    .icon-btn{ width:48px;height:48px;border-radius:12px;border:1px solid rgba(16,24,40,.04); background:transparent; display:grid; place-items:center; cursor:pointer; }
+    .cart-badge{ display:inline-grid; place-items:center; min-width:26px; padding:6px 8px; border-radius:999px; background: linear-gradient(90deg,var(--accent-2),var(--accent-1)); color:#041217; font-weight:800; font-size:12px; }
+
+    /* wrapper */
+    .wrap{ max-width:var(--max-width); margin:18px auto; padding:0 18px; }
+
+    /* Hero / Carousel */
+    .hero{ background:var(--glass); border-radius:calc(var(--card-radius)+4px); padding:18px; border:1px solid rgba(16,24,40,.03); box-shadow:var(--shadow); }
+    .hero .head{ display:flex; justify-content:space-between; align-items:end; margin-bottom:8px; gap:12px; }
+    .hero h2{ margin:0; font-family:"Playfair Display",serif; font-weight:700; font-size:20px; color:#071022; }
+    .hero .muted{ color:var(--muted); font-size:13px; }
+
+    .carousel{ display:flex; gap:12px; overflow-x:auto; padding:10px 6px; scroll-snap-type:x mandatory; -webkit-overflow-scrolling:touch; }
+    .carousel::-webkit-scrollbar{ display:none }
+    .carousel-item{ flex:0 0 78%; max-width:360px; background:#fff; border-radius:12px; padding:12px; scroll-snap-align:start; border:1px solid rgba(16,24,40,.03); box-shadow:var(--shadow); display:flex; flex-direction:column; gap:8px; }
+    @media(min-width:720px){ .carousel-item{ flex-basis:48%; max-width:48% } }
+    @media(min-width:1100px){ .carousel-item{ flex-basis:32%; max-width:32% } }
+
+    .thumb-wrap{ height:180px; border-radius:12px; overflow:hidden; display:grid; place-items:center; background:linear-gradient(135deg,#fbfcff,#ffffff); }
+    .thumb-wrap img{ width:100%; height:100%; object-fit:contain; cursor:pointer; }
+
+    /* product grid */
+    .grid{ margin-top:18px; display:grid; gap:16px; grid-template-columns: repeat(auto-fit,minmax(240px,1fr)); }
+    .card{ position:relative; background:#fff; border-radius:12px; padding:12px; border:1px solid rgba(16,24,40,.03); box-shadow:var(--shadow); display:flex; flex-direction:column; gap:8px; min-height:360px; }
+    .tag{ position:absolute; left:12px; top:12px; background: linear-gradient(90deg,#ffd87a,#ffd9f0); color:#071022; font-weight:800; padding:6px 10px; border-radius:999px; font-size:12px; box-shadow:0 8px 20px rgba(250,208,196,.12); }
+    .card .thumb{ height:180px; border-radius:10px; overflow:hidden; display:grid; place-items:center; background:linear-gradient(135deg,#fbfcff,#fff); box-shadow: inset 0 -8px 40px rgba(0,0,0,0.02) }
+    .card .thumb img{ width:100%; height:100%; object-fit:contain; cursor:zoom-in; }
+
+    .card h3{ margin:6px 0 0; font-family:"Playfair Display", serif; font-size:16px; font-weight:700 }
+    .price{ color:var(--accent-3); font-weight:800 }
+    .desc{ color:var(--muted); font-size:13px; min-height:36px }
+
+    .card-footer{ margin-top:auto; display:flex; align-items:center; justify-content:space-between; gap:8px; }
+    .btn-buy{ background: linear-gradient(90deg,var(--accent-2),var(--accent-1)); color:#051218; border:0; padding:10px 14px; border-radius:999px; font-weight:800; cursor:pointer; box-shadow: 0 10px 30px rgba(122,92,255,.06); transition: transform .12s; }
+    .btn-buy:hover{ transform: translateY(-3px) }
+    .qty-controls{ display:flex; align-items:center; gap:8px; border-radius:999px; padding:6px; border:1px solid rgba(16,24,40,.04); }
+    .qty-controls button{ width:36px; height:36px; border-radius:10px; border:1px solid rgba(16,24,40,.06); background:transparent; cursor:pointer; font-weight:700; }
+
+    /* drawers */
+    .drawer{ position:fixed; top:12px; bottom:12px; width:var(--drawer-width); max-width:92vw; z-index:220; background:var(--glass); border:1px solid rgba(16,24,40,.04); border-radius:12px; box-shadow:0 40px 90px rgba(16,24,40,.08); padding:16px; transform: translateX(-120%); transition: transform .34s cubic-bezier(.2,.9,.2,1); backdrop-filter: blur(6px); }
+    .drawer.open{ transform: translateX(0) }
+    .drawer.right{ right:12px; left:auto; transform: translateX(120%); border-left:1px solid rgba(16,24,40,.04); }
+    .drawer.right.open{ transform: translateX(0) }
+    .drawer h4{ margin:0 0 12px; font-family:"Playfair Display",serif; font-weight:700; }
+    .close-btn{ position:absolute; right:12px; top:12px; width:36px; height:36px; border-radius:8px; border:0; background:transparent; cursor:pointer }
+
+    .overlay{ position:fixed; inset:0; background:rgba(6,8,12,.22); z-index:210; opacity:0; pointer-events:none; transition:opacity .22s; }
+    .overlay.show{ opacity:1; pointer-events:auto; }
+
+    /* cart */
+    .cart-item{ display:flex; gap:10px; align-items:center; padding:8px 4px; border-radius:10px; }
+    .cart-item img{ width:64px; height:64px; object-fit:cover; border-radius:8px; }
+    .cart-item .meta .title{ font-weight:700; }
+    .cart-item .meta .sub{ color:var(--muted); font-size:13px; }
+    .cart-footer{ margin-top:12px; display:flex; flex-direction:column; gap:8px; }
+    .checkout{ background: linear-gradient(90deg,var(--accent-3),#ffd87a); border-radius:10px; padding:12px; border:0; cursor:pointer; font-weight:800; }
+
+    /* lightbox */
+    .lightbox{ position:fixed; inset:0; display:none; z-index:300; align-items:center; justify-content:center; background:rgba(6,8,12,.78) }
+    .lightbox.open{ display:flex }
+    .lb-inner{ width:min(1100px,94vw); height:min(82vh,820px); border-radius:12px; background:#fff; overflow:hidden; display:flex; align-items:center; justify-content:center; position:relative; padding:12px; }
+    .lb-inner img{ width:100%; height:100%; object-fit:contain; border-radius:8px }
+    .lb-close{ position:absolute; right:12px; top:12px; width:40px; height:40px; border-radius:8px; border:0; background:transparent; cursor:pointer; }
+
+    /* footer */
+    footer{ margin-top:28px; padding:18px; text-align:center; color:var(--muted); font-size:13px }
+
+    /* responsive */
+    @media(max-width:720px){
+      .carousel-item{ flex-basis:86%; max-width:86% }
+      .drawer{ left:8px; right:8px; transform: translateX(-120%) }
+      .drawer.right{ right:8px; left:auto; transform: translateX(120%) }
+      .card{ min-height:320px }
+      .topbar{ padding:10px }
     }
   </style>
 </head>
 <body>
-  <div id="tsparticles"></div>
 
-  <header>
-    <div class="header-left">
-      <div class="header-img">
-        <img src="/Screenshot_2025-06-17-22-47-06-40_948cd9899890cbd5c2798760b2b95377.jpg" alt="echo-image">
-      </div>
-      <h1>ECHO</h1>
+  <!-- Loader -->
+  <div id="loader"><div class="logo">K Y R O</div></div>
+           
+  <!-- Topbar -->
+  <div class="topbar">
+    <div class="left">
+      <button id="openMenu" class="icon-btn" aria-label="Open menu"><i class="fa-solid fa-bars"></i></button>
     </div>
-    <button class="menu-btn" id="menuBtn" aria-label="Toggle menu"><i class="fas fa-bars"></i></button>
-  </header>
-
-  <nav class="sidebar" id="sidebar" aria-label="Sidebar navigation">
-    <ul>
-      <li><a href="#">🏠 Home</a></li>
-      <li><a href="#">📦 My Airdrops</a></li>
-      <li><a href="#">🔐 Wallet</a></li>
-      <li><a href="#">📞 Support</a></li>
-      <li><a href="#">🚪 Logout</a></li>
-    </ul>
-  </nav>
-  <div class="overlay" id="overlay"></div>
-
-  <div class="main-content">
-    <div class="task-json-container">
-      <h1> SOCIALS</h1>
-      <code class="task-json">
-      {
-  "Title": "Follow on Twitter",
-  "Button": "Follow",
-  "Comment": "Limited time offer!",
-  "Script": "(function(){const btn=event.target;if(btn.textContent.trim()===\"Follow\"){window.open('https://x.com/vk76321?s=09','_blank');setTimeout(()=>{if(confirm(\"Did you follow @vk76321 on Twitter?\")){btn.textContent=\"Claim Now\";alert(\"Thank you for following! Now click 'Claim Now'\");}else{alert(\"Please follow @vk76321 first to claim!\");}},2000);}else if(btn.textContent.trim()===\"Claim Now\"){confetti({particleCount:100,spread:90});alert(\"Congrats! You claimed successfully.\");}})();"
-}
-      </code>
-      <code class="task-json">
-{
-"Title": "Join KYRO Beta",
-"Button": "Join Waitlist",
-"Comment": "Be the first to test features!",
-"Script": "(function(){const btn=event.target;if(btn.textContent.trim()===\"Join Waitlist\"){window.open('/waitlist.html','_blank');setTimeout(()=>{if(confirm(\"Did you join the KYRO Beta waitlist?\")){btn.textContent=\"Claim Now\";alert(\"Thank you! Now you can claim your reward.\");}else{alert(\"Please join the waitlist first to claim.\");}},2000);}else if(btn.textContent.trim()===\"Claim Now\"){confetti({particleCount:100,spread:90});alert(\"Congrats! You claimed successfully.\");}})();"
-}
-      </code>
-  
-           <code class="task-json">
-        
-        
-        {
-"Title": "Join QBTC Beta – Win 1 BTC!",
-"Button": "Claim 1 BTC",
-"Comment": "Be the first to test features and stand a chance to win 1 BTC!",
-"Script": "(function(){const btn=event.target;if(btn.textContent.trim()===\"Claim 1 BTC\"){window.open('/waitlist.html','_blank');setTimeout(()=>{if(confirm(\"Did you join the QBTC Beta waitlist? This makes you eligible to win 1 BTC!\")){btn.textContent=\"Confirm Entry\";alert(\"Awesome! You've been added to the 1 BTC draw. Click again to confirm your entry.\");}else{alert(\"Please join the waitlist to enter the 1 BTC giveaway.\");}},2000);}else if(btn.textContent.trim()===\"Confirm Entry\"){confetti({particleCount:150,spread:100});alert(\"🎉 Congratulations! You've successfully claimed your entry to win 1 BTC.\");}})();"
-}
-      </code>
+    <div class="center"><div class="brand">KYRO</div></div>
+    <div class="right">
+      <button id="profilesPage" class="icon-btn" title="Profiles" aria-label="Profiles"><i class="fa-solid fa-user"></i></button>
+      <button id="openCart" class="icon-btn" aria-label="Open cart"><i class="fa-solid fa-cart-shopping"></i></button>
+      <div style="margin-left:10px"><span id="cartCount" class="cart-badge">0</span></div>
     </div>
-    <div class="rendered-tasks"> </div>
   </div>
 
-  <script>
-    tsParticles.load("tsparticles", {
-      fpsLimit: 60,
-      interactivity: { events: { onHover: { enable: true, mode: "repulse" } }, modes: { repulse: { distance: 100 } } },
-      particles: {
-        color: { value: "#00ffff" },
-        links: { color: "#00ffff", distance: 120, enable: true, opacity: 0.2, width: 1 },
-        move: { enable: true, speed: 1, outModes: { default: "bounce" } },
-        number: { value: 40 },
-        opacity: { value: 0.3 },
-        size: { value: { min: 1, max: 3 } }
-      }
-    });
+  <div class="wrap">
 
-    const menuBtn = document.getElementById('menuBtn');
-    const sidebar = document.getElementById('sidebar');
-    const overlay = document.getElementById('overlay');
-    function toggleSidebar() {
-      sidebar.classList.toggle('active');
-      overlay.classList.toggle('active');
+    <!-- HERO / Carousel -->
+    <section class="hero" aria-label="Featured">
+      <div class="head">
+        <div>
+          <h2>Featured Products</h2>
+          <div class="muted">Auto-slide • Tap thumbnail to jump to product • Tap image for gallery</div>
+        </div>
+        <div style="display:flex;gap:8px;align-items:center">
+          <!-- placeholder for future controls -->
+        </div>
+      </div>
+
+      <div id="carousel" class="carousel" role="list"></div>
+    </section>
+
+    <!-- PRODUCTS GRID -->
+    <section style="margin-top:18px;">
+      <h3 style="font-family:'Playfair Display',serif;margin:0 0 8px;font-size:20px">Services</h3>
+      <div id="productGrid" class="grid" role="list"></div>
+    </section>
+
+  </div>
+
+  <!-- Left Menu Drawer -->
+  <aside id="menuDrawer" class="drawer" aria-hidden="true">
+    <button id="menuClose" class="close-btn" aria-label="Close menu"><i class="fa-solid fa-xmark"></i></button>
+    <h4>Menu</h4>
+    <nav aria-label="Main navigation">
+      <a href="#" style="display:block;padding:8px 0">Home</a>
+      <a href="#" style="display:block;padding:8px 0" id="menuProfile">Profile</a>
+      <a href="#" style="display:block;padding:8px 0">Tasks</a>
+      <a href="#" style="display:block;padding:8px 0">Contact</a>
+    </nav>
+    <div style="margin-top:18px;display:flex;gap:12px;justify-content:center;color:var(--muted)">
+      <a href="#" aria-label="Telegram"><i class="fab fa-telegram"></i></a>
+      <a href="#" aria-label="Discord"><i class="fab fa-discord"></i></a>
+      <a href="#" aria-label="Twitter"><i class="fab fa-twitter"></i></a>
+      <a href="#" aria-label="Instagram"><i class="fab fa-instagram"></i></a>
+    </div>
+  </aside>
+
+  <!-- Right Cart Drawer -->
+  <aside id="cartDrawer" class="drawer right" aria-hidden="true">
+    <button id="cartClose" class="close-btn" aria-label="Close cart"><i class="fa-solid fa-xmark"></i></button>
+    <h4>Your Cart</h4>
+    <div id="cartItems" style="display:flex;flex-direction:column;gap:10px;max-height:58vh;overflow:auto;padding-right:6px"></div>
+
+    <div class="cart-footer">
+      <div style="display:flex;justify-content:space-between;align-items:center">
+        <div style="font-weight:800">Total</div>
+        <div id="cartTotal" style="font-weight:900;color:#10203a">₹0</div>
+      </div>
+      <button id="checkoutBtn" class="checkout">Checkout</button>
+    </div>
+  </aside>
+
+  <!-- Overlay -->
+  <div id="overlay" class="overlay" aria-hidden="true"></div>
+
+  <!-- Lightbox -->
+  <div id="lightbox" class="lightbox" aria-hidden="true">
+    <div class="lb-inner" role="dialog" aria-modal="true">
+      <button id="lbClose" class="lb-close" aria-label="Close lightbox"><i class="fa-solid fa-xmark"></i></button>
+      <img id="lbImage" src="" alt="preview image">
+    </div>
+  </div>
+
+  <footer>
+    <div style="font-weight:700; font-family:'Playfair Display',serif; margin-bottom:6px">KYRO</div>
+    <div>© <span id="year"></span> KYRO — Cinematic UI</div>
+  </footer>
+
+<script>
+/* Production final single-file script
+   - Stable drawers (menu/cart) with immediate closing behavior
+   - Lenis smooth quick jump for carousel thumbnail -> product
+   - Auto-slide carousel + pause on touch
+   - Lightbox with keyboard + touch navigation
+   - Buy → qty integration, cart persists to localStorage
+   - Ready to integrate Profiles.html later (use shared storage key or API)
+*/
+
+(() => {
+  // ---------- demo products (replace with your assets) ----------
+  const products = [
+    { id: 'p1', title: 'Premium Apples (1kg)', price: 120, desc: 'Fresh & juicy apples from the hills.', images: ['/images/pr1.jpg','/pg.jpg']},
+    { id: 'p2', title: 'Organic Milk (1L)', price: 60, desc: 'Pure A2 milk, farm fresh.', images: ['https://images.unsplash.com/photo-1585238342027-8aa7d4a3c7d2?q=80&w=1200&auto=format&fit=crop','https://images.unsplash.com/photo-1544025162-d76694265947?q=80&w=1200&auto=format&fit=crop']},
+    { id: 'p3', title: 'Cold Brew Coffee (300ml)', price: 79, desc: 'Bold arabica brew, low sugar.', images: ['https://images.unsplash.com/photo-1470337458703-46ad1756a187?q=80&w=1200&auto=format&fit=crop','https://images.unsplash.com/photo-1526318472351-c75fcf070e8f?q=80&w=1200&auto=format&fit=crop']},
+    { id: 'p4', title: 'Whole Wheat Bread', price: 55, desc: 'Soft loaf, baked daily.', images: ['https://images.unsplash.com/photo-1552332386-f8dd00dc2f85?q=80&w=1200&auto=format&fit=crop','https://images.unsplash.com/photo-1523986371872-9d3ba2e2f642?q=80&w=1200&auto=format&fit=crop']}
+  ];
+
+  // ---------- DOM refs ----------
+  const carouselEl = document.getElementById('carousel');
+  const gridEl = document.getElementById('productGrid');
+  const cartCountEl = document.getElementById('cartCount');
+  const cartItemsEl = document.getElementById('cartItems');
+  const cartTotalEl = document.getElementById('cartTotal');
+  const menuDrawer = document.getElementById('menuDrawer');
+  const cartDrawer = document.getElementById('cartDrawer');
+  const overlay = document.getElementById('overlay');
+  const menuCloseBtn = document.getElementById('menuClose');
+  const cartCloseBtn = document.getElementById('cartClose');
+  const openMenuBtn = document.getElementById('openMenu');
+  const openCartBtn = document.getElementById('openCart');
+  const profilesPageBtn = document.getElementById('profilesPage');
+  const lb = document.getElementById('lightbox');
+  const lbImage = document.getElementById('lbImage');
+  const lbClose = document.getElementById('lbClose');
+  const yearEl = document.getElementById('year');
+
+  yearEl.textContent = new Date().getFullYear();
+
+  // ---------- cart storage ----------
+  const CART_KEY = 'kyro_cart_prod_v1';
+  let CART = JSON.parse(localStorage.getItem(CART_KEY) || '{}');
+
+  function persistCart(){ localStorage.setItem(CART_KEY, JSON.stringify(CART)); }
+
+  function cartCount(){ return Object.values(CART).reduce((s,q)=>s+q,0); }
+
+  // ---------- Lenis ----------
+  let lenis = null;
+  function initLenis(){
+    if(window.Lenis){
+      lenis = new Lenis({ duration: 0.45, smoothWheel: true });
+      function raf(t){ lenis.raf(t); requestAnimationFrame(raf); }
+      requestAnimationFrame(raf);
+      window.lenisScrollTo = (y, opts={}) => lenis.scrollTo(y, opts);
     }
-    menuBtn.addEventListener('click', toggleSidebar);
-    overlay.addEventListener('click', toggleSidebar);
-    sidebar.querySelectorAll('a').forEach(link => {
-      link.addEventListener('click', () => {
-        sidebar.classList.remove('active');
-        overlay.classList.remove('active');
+  }
+
+  // ---------- build carousel ----------
+  function buildCarousel(){
+    carouselEl.innerHTML = '';
+    products.forEach((p, idx) => {
+      const it = document.createElement('div'); it.className = 'carousel-item';
+      it.innerHTML = `
+        <div class="thumb-wrap" data-index="${idx}">
+          <img src="${p.images[0]}" alt="${escapeHtml(p.title)}">
+        </div>
+        <div style="margin-top:8px">
+          <div style="font-weight:700">${escapeHtml(p.title)}</div>
+          <div style="color:var(--muted);font-size:13px;margin-top:6px">₹${p.price} • ${escapeHtml(p.desc)}</div>
+        </div>
+      `;
+      const thumb = it.querySelector('.thumb-wrap');
+      // click => fast jump to product
+      thumb.addEventListener('click', () => {
+        const card = document.querySelector(`[data-prod-id="${p.id}"]`);
+        if(card){
+          const rect = card.getBoundingClientRect();
+          const topOffset = 84; // header + margin
+          const targetY = window.scrollY + rect.top - topOffset;
+          if(window.lenisScrollTo) window.lenisScrollTo(targetY, { duration: 5});
+          else window.scrollTo({ top: targetY, behavior: 'smooth' });
+          anime({ targets: card, backgroundColor: ['#fff', '#fbfbff'], duration: 520, easing: 'easeOutCubic' });
+        } else {
+          openLightbox(p.images, 0);
+        }
       });
+      // double click opens gallery
+      thumb.querySelector('img').addEventListener('dblclick', () => openLightbox(p.images, 0));
+      carouselEl.appendChild(it);
     });
-  </script>
+  }
 
-  <script>
-    const codeBlocks = document.querySelectorAll('.task-json');
-    const renderedContainer = document.querySelector('.rendered-tasks');
+  // ---------- build grid ----------
+  function buildGrid(){
+    gridEl.innerHTML = '';
+    products.forEach(p => {
+      const card = document.createElement('div'); card.className = 'card'; card.setAttribute('data-prod-id', p.id);
+      const tag = p.title.toLowerCase().includes('premium') ? 'Premium' : (p.title.toLowerCase().includes('organic') ? 'Fresh' : 'Top');
+      card.innerHTML = `
+        <div class="tag">${tag}</div>
+        <div class="thumb"><img src="${p.images[0]}" alt="${escapeHtml(p.title)}" data-gallery='${JSON.stringify(p.images)}'></div>
+        <h3>${escapeHtml(p.title)}</h3>
+        <div class="price">₹${p.price}</div>
+        <div class="desc">${escapeHtml(p.desc)}</div>
+        <div class="card-footer">
+          <div class="left-placeholder"></div>
+          <div class="right-action" data-id="${p.id}"></div>
+        </div>
+      `;
+      // thumbnail opens gallery
+      card.querySelector('.thumb img').addEventListener('click', () => openLightbox(p.images, 0));
+      gridEl.appendChild(card);
+    });
+    updateAllCardQtyUI();
+    attachCardHover();
+  }
 
-    codeBlocks.forEach(block => {
-      try {
-        const json = JSON.parse(block.textContent.trim());
-        const taskDiv = document.createElement('div');
-        taskDiv.className = 'task';
-
-        const headerDiv = document.createElement('div');
-        headerDiv.className = 'task-header';
-
-        const titleEl = document.createElement('h3');
-        titleEl.textContent = json.Title || 'Untitled';
-
-        const btnEl = document.createElement('button');
-        btnEl.textContent = json.Button || 'Click';
-
-        btnEl.addEventListener('click', () => {
-          if (json.Script && typeof json.Script === 'string' && json.Script.trim()) {
-            try {
-              new Function(json.Script)();
-            } catch (e) {
-              alert("Script error: " + e.message);
-            }
-          } else {
-            alert("✅ Button clicked: " + btnEl.textContent);
-          }
-        });
-
-        headerDiv.appendChild(titleEl);
-        headerDiv.appendChild(btnEl);
-
-        const commentEl = document.createElement('p');
-        commentEl.textContent = json.Comment || '';
-
-        taskDiv.appendChild(headerDiv);
-        taskDiv.appendChild(commentEl);
-        renderedContainer.appendChild(taskDiv);
-
-        block.style.display = "none";
-      } catch (err) {
-        block.style.color = "red";
-        block.textContent = "❌ Invalid JSON";
+  // ---------- buy / qty ----------
+  function createBuyButton(id){
+    const btn = document.createElement('button'); btn.className = 'btn-buy'; btn.textContent = 'BUY NOW';
+    btn.addEventListener('click', (e) => {
+      e.stopPropagation();
+      CART[id] = (CART[id] || 0) + 1;
+      persistCart(); renderCart(); updateAllCardQtyUI(); pulseCartBadge();
+      anime({ targets: btn, scale: [1,1.06,1], duration: 260, easing: 'easeOutQuad' });
+    });
+    return btn;
+  }
+  function createQtyControls(id){
+    const wrap = document.createElement('div'); wrap.className = 'qty-controls';
+    const dec = document.createElement('button'); dec.type='button'; dec.textContent = '-';
+    const disp = document.createElement('div'); disp.className = 'qty-display'; disp.textContent = CART[id] || 0;
+    const inc = document.createElement('button'); inc.type='button'; inc.textContent = '+';
+    dec.addEventListener('click', (ev) => { ev.stopPropagation(); const cur = CART[id] || 0; if(cur <= 1) { delete CART[id]; } else CART[id] = cur - 1; persistCart(); renderCart(); updateAllCardQtyUI(); });
+    inc.addEventListener('click', (ev) => { ev.stopPropagation(); CART[id] = (CART[id] || 0) + 1; persistCart(); renderCart(); updateAllCardQtyUI(); });
+    wrap.appendChild(dec); wrap.appendChild(disp); wrap.appendChild(inc);
+    return wrap;
+  }
+  function updateAllCardQtyUI(){
+    document.querySelectorAll('.right-action').forEach(el => {
+      const id = el.dataset.id;
+      el.innerHTML = '';
+      const qty = CART[id] || 0;
+      if(qty > 0){
+        const controls = createQtyControls(id);
+        controls.querySelector('.qty-display').textContent = qty;
+        el.appendChild(controls);
+      } else {
+        el.appendChild(createBuyButton(id));
       }
     });
-  </script>
+    cartCountEl.textContent = cartCount();
+  }
+
+  // ---------- render cart ----------
+  function renderCart(){
+    cartCountEl.textContent = cartCount();
+    cartItemsEl.innerHTML = '';
+    const entries = Object.entries(CART);
+    if(entries.length === 0){
+      cartItemsEl.innerHTML = '<div style="color:var(--muted);padding:8px">Your cart is empty</div>';
+      cartTotalEl.textContent = '₹0';
+      return;
+    }
+    let total = 0;
+    entries.forEach(([id, qty]) => {
+      const p = products.find(x => x.id === id); if(!p) return;
+      total += p.price * qty;
+      const row = document.createElement('div'); row.className = 'cart-item';
+      row.innerHTML = `
+        <img src="${p.images[0]}" alt="${escapeHtml(p.title)}">
+        <div class="meta">
+          <div class="title">${escapeHtml(p.title)}</div>
+          <div class="sub">₹${p.price} × ${qty}</div>
+          <div style="margin-top:8px;display:flex;gap:8px;align-items:center">
+            <div style="display:flex;align-items:center;gap:8px">
+              <button class="cart-dec" data-id="${id}">-</button>
+              <div style="min-width:28px;text-align:center;font-weight:700">${qty}</div>
+              <button class="cart-inc" data-id="${id}">+</button>
+            </div>
+            <button class="cart-remove" data-id="${id}" style="margin-left:8px;padding:6px;border-radius:8px;border:1px solid rgba(16,24,40,.06);background:transparent;cursor:pointer">Remove</button>
+          </div>
+        </div>
+      `;
+      row.querySelector('.cart-dec').addEventListener('click', () => { const id = row.querySelector('.cart-dec').dataset.id; const cur = CART[id] || 0; if(cur <= 1) delete CART[id]; else CART[id] = cur - 1; persistCart(); renderCart(); updateAllCardQtyUI(); });
+      row.querySelector('.cart-inc').addEventListener('click', () => { const id = row.querySelector('.cart-inc').dataset.id; CART[id] = (CART[id] || 0) + 1; persistCart(); renderCart(); updateAllCardQtyUI(); });
+      row.querySelector('.cart-remove').addEventListener('click', () => { const id = row.querySelector('.cart-remove').dataset.id; delete CART[id]; persistCart(); renderCart(); updateAllCardQtyUI(); anime({ targets: row, opacity: [1,0], translateX: [0,20], duration: 240, easing: 'easeInQuad' }).finished.then(()=> row.remove()); });
+      cartItemsEl.appendChild(row);
+    });
+    cartTotalEl.textContent = `₹${Math.round(total)}`;
+  }
+
+  // ---------- overlay & drawers (robust) ----------
+  function showOverlay(){ overlay.classList.add('show'); overlay.setAttribute('aria-hidden','false'); }
+  function hideOverlay(){ overlay.classList.remove('show'); overlay.setAttribute('aria-hidden','true'); }
+
+  function openMenu(){ menuDrawer.classList.add('open'); menuDrawer.setAttribute('aria-hidden','false'); showOverlay(); anime({ targets: menuDrawer, translateX: ['-18%','0%'], duration: 260, easing: 'easeOutCubic' }); }
+  function closeMenu(){ anime({ targets: menuDrawer, translateX: ['0%','-103%'], duration: 200, easing: 'easeInCubic' }).finished.then(()=> { menuDrawer.classList.remove('open'); menuDrawer.setAttribute('aria-hidden','true'); }); hideOverlay(); }
+
+  function openCart(){ cartDrawer.classList.add('open'); cartDrawer.setAttribute('aria-hidden','false'); renderCart(); showOverlay(); anime({ targets: cartDrawer, translateX: ['18%','0%'], duration: 260, easing: 'easeOutCubic' }); }
+  function closeCart(){ anime({ targets: cartDrawer, translateX: ['0%','103%'], duration: 260, easing: 'easeInCubic' }).finished.then(()=> { cartDrawer.classList.remove('open'); cartDrawer.setAttribute('aria-hidden','true'); }); hideOverlay(); }
+
+  // overlay click closes open drawers quickly
+  overlay.addEventListener('click', () => { if(menuDrawer.classList.contains('open')) closeMenu(); if(cartDrawer.classList.contains('open')) closeCart(); });
+
+  // attach open/close
+  openMenuBtn.addEventListener('click', ()=> { if(menuDrawer.classList.contains('open')) closeMenu(); else openMenu(); });
+  menuCloseBtn.addEventListener('click', closeMenu);
+
+  openCartBtn.addEventListener('click', ()=> { if(cartDrawer.classList.contains('open')) closeCart(); else openCart(); });
+  cartCloseBtn.addEventListener('click', closeCart);
+
+  // profiles button (redirect to profiles.html if present)
+  profilesPageBtn.addEventListener('click', () => {
+    // try to go to profiles.html; if not found, alert (you will add this later)
+    window.location.href = 'profiles.html';
+  });
+
+  // ---------- lightbox ----------
+  let galleryImages = [], galleryIndex = 0;
+  function openLightbox(images, index = 0){
+    if(!images || images.length === 0) return;
+    galleryImages = images.slice(); galleryIndex = index;
+    lbImage.src = galleryImages[galleryIndex];
+    lb.classList.add('open'); lb.setAttribute('aria-hidden','false');
+    anime({ targets: '.lb-inner', scale: [0.98,1], opacity: [0,1], duration: 220, easing: 'easeOutCubic' });
+  }
+  function closeLightbox(){ lb.classList.remove('open'); lb.setAttribute('aria-hidden','true'); }
+  lbClose.addEventListener('click', closeLightbox);
+  lb.addEventListener('click', e => { if(e.target === lb) closeLightbox(); });
+
+  document.addEventListener('keydown', (e) => {
+    if(e.key === 'Escape'){ if(lb.classList.contains('open')) closeLightbox(); if(menuDrawer.classList.contains('open')) closeMenu(); if(cartDrawer.classList.contains('open')) closeCart(); }
+    if(lb.classList.contains('open')){
+      if(e.key === 'ArrowRight'){ galleryIndex = Math.min(galleryImages.length-1, galleryIndex+1); lbImage.src = galleryImages[galleryIndex]; }
+      if(e.key === 'ArrowLeft'){ galleryIndex = Math.max(0, galleryIndex-1); lbImage.src = galleryImages[galleryIndex]; }
+    }
+  });
+
+  // touch swipe on lightbox
+  let startX=0, deltaX=0;
+  lb.addEventListener('touchstart', e => startX = e.touches[0].clientX, { passive: true });
+  lb.addEventListener('touchmove', e => deltaX = e.touches[0].clientX - startX, { passive: true });
+  lb.addEventListener('touchend', () => {
+    if(Math.abs(deltaX) > 50){
+      if(deltaX < 0 && galleryIndex < galleryImages.length - 1) galleryIndex++;
+      if(deltaX > 0 && galleryIndex > 0) galleryIndex--;
+      lbImage.src = galleryImages[galleryIndex];
+    }
+    deltaX = 0;
+  });
+
+  // ---------- carousel auto scroll ----------
+  let carouselTimer = null;
+  function startCarouselAuto(){
+    stopCarouselAuto();
+    carouselTimer = setInterval(()=> {
+      const visible = carouselEl.clientWidth;
+      if(carouselEl.scrollLeft + visible >= carouselEl.scrollWidth - 8) carouselEl.scrollTo({ left: 0, behavior: 'smooth' });
+      else carouselEl.scrollBy({ left: Math.min(visible * 0.9, 360), behavior: 'smooth' });
+    }, 3800);
+  }
+  function stopCarouselAuto(){ if(carouselTimer){ clearInterval(carouselTimer); carouselTimer = null; } }
+  carouselEl.addEventListener('pointerdown', () => stopCarouselAuto());
+  carouselEl.addEventListener('pointerup', () => startCarouselAuto());
+  carouselEl.addEventListener('touchstart', () => stopCarouselAuto(), { passive: true });
+  carouselEl.addEventListener('touchend', () => startCarouselAuto());
+
+  // ---------- small helpers ----------
+  function attachCardHover(){ document.querySelectorAll('.card').forEach(c => { c.addEventListener('mouseenter', ()=> anime({ targets:c, translateY:-6, duration:200, easing:'easeOutCubic' })); c.addEventListener('mouseleave', ()=> anime({ targets:c, translateY:0, duration:200, easing:'easeInCubic' })); }); }
+  function pulseCartBadge(){ anime({ targets: '#cartCount', scale: [1,1.22,1], duration: 420, easing: 'easeOutElastic(1,.6)' }); }
+
+  function escapeHtml(s){ if(!s) return ''; return String(s).replace(/[&<>"']/g, m=>({ '&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;' })[m]); }
+
+  // ---------- init render ----------
+  function init(){
+    initLenis();
+    buildCarousel();
+    buildGrid();
+    renderCart();
+    attachCardHover();
+    startCarouselAuto();
+    anime({ targets: '#loader', opacity: [1,0], translateY: [0,-8], duration: 560, easing: 'easeInOutCubic', delay: 520, complete: ()=>{ document.getElementById('loader').style.display = 'none'; }});
+  }
+
+  // ---------- lightweight helpers for reuse ----------
+  function saveCartAndRefresh(){ persistCart(); renderCart(); updateAllCardQtyUI(); }
+
+  // ---------- ensure functions defined earlier are available here ----------
+  function updateAllCardQtyUI(){
+    document.querySelectorAll('.right-action').forEach(el => {
+      const id = el.dataset.id;
+      el.innerHTML = '';
+      const qty = CART[id] || 0;
+      if(qty > 0){
+        const controls = createQtyControls(id);
+        controls.querySelector('.qty-display').textContent = qty;
+        el.appendChild(controls);
+      } else {
+        el.appendChild(createBuyButton(id));
+      }
+    });
+    cartCountEl.textContent = cartCount();
+    persistCart();
+  }
+
+  function createBuyButton(prodId){
+    const btn = document.createElement('button'); btn.className = 'btn-buy'; btn.textContent = 'BUY NOW';
+    btn.addEventListener('click', (e) => {
+      e.stopPropagation();
+      CART[prodId] = (CART[prodId] || 0) + 1;
+      saveCartAndRefresh();
+      pulseCartBadge(); anime({ targets: btn, scale: [1,1.06,1], duration: 240, easing: 'easeOutQuad' });
+    });
+    return btn;
+  }
+
+  function createQtyControls(prodId){
+    const wrap = document.createElement('div'); wrap.className = 'qty-controls';
+    const dec = document.createElement('button'); dec.type='button'; dec.textContent='-';
+    const disp = document.createElement('div'); disp.className='qty-display'; disp.textContent = CART[prodId] || 0;
+    const inc = document.createElement('button'); inc.type='button'; inc.textContent='+';
+    dec.addEventListener('click', (ev) => { ev.stopPropagation(); const cur = CART[prodId] || 0; if(cur <= 1) delete CART[prodId]; else CART[prodId] = cur - 1; saveCartAndRefresh(); });
+    inc.addEventListener('click', (ev) => { ev.stopPropagation(); CART[prodId] = (CART[prodId] || 0) + 1; saveCartAndRefresh(); });
+    wrap.appendChild(dec); wrap.appendChild(disp); wrap.appendChild(inc);
+    return wrap;
+  }
+
+  // ---------- final renderCart definition (non-duplicated) ----------
+  function renderCart(){
+    cartCountEl.textContent = cartCount();
+    cartItemsEl.innerHTML = '';
+    const entries = Object.entries(CART);
+    if(entries.length === 0){
+      cartItemsEl.innerHTML = '<div style="color:var(--muted);padding:8px">Your cart is empty</div>';
+      cartTotalEl.textContent = '₹0';
+      return;
+    }
+    let total = 0;
+    entries.forEach(([id, qty]) => {
+      const p = products.find(x=>x.id === id); if(!p) return;
+      total += p.price * qty;
+      const row = document.createElement('div'); row.className = 'cart-item';
+      row.innerHTML = `
+        <img src="${p.images[0]}" alt="${escapeHtml(p.title)}">
+        <div class="meta">
+          <div class="title">${escapeHtml(p.title)}</div>
+          <div class="sub">₹${p.price} × ${qty}</div>
+          <div style="margin-top:8px;display:flex;gap:8px;align-items:center">
+            <div style="display:flex;align-items:center;gap:8px">
+              <button class="cart-dec" data-id="${id}">-</button>
+              <div style="min-width:28px;text-align:center;font-weight:700">${qty}</div>
+              <button class="cart-inc" data-id="${id}">+</button>
+            </div>
+            <button class="cart-remove" data-id="${id}" style="margin-left:8px;padding:6px;border-radius:8px;border:1px solid rgba(16,24,40,.06);background:transparent;cursor:pointer">Remove</button>
+          </div>
+        </div>
+      `;
+      row.querySelector('.cart-dec').addEventListener('click', () => { const id = row.querySelector('.cart-dec').dataset.id; const cur = CART[id] || 0; if(cur <= 1) delete CART[id]; else CART[id] = cur - 1; persistCart(); renderCart(); updateAllCardQtyUI(); });
+      row.querySelector('.cart-inc').addEventListener('click', () => { const id = row.querySelector('.cart-inc').dataset.id; CART[id] = (CART[id] || 0) + 1; persistCart(); renderCart(); updateAllCardQtyUI(); });
+      row.querySelector('.cart-remove').addEventListener('click', () => { const id = row.querySelector('.cart-remove').dataset.id; delete CART[id]; persistCart(); renderCart(); updateAllCardQtyUI(); anime({ targets: row, opacity: [1,0], translateX: [0,20], duration: 220, easing: 'easeInQuad' }).finished.then(()=> row.remove()); });
+      cartItemsEl.appendChild(row);
+    });
+    cartTotalEl.textContent = `₹${Math.round(total)}`;
+  }
+
+  // ---------- init app ----------
+  document.addEventListener('DOMContentLoaded', init);
+
+  // expose quick API
+  window.KYRO = {
+    products,
+    getCart: () => CART,
+    addToCart: (id, q=1) => { CART[id] = (CART[id]||0) + q; persistCart(); renderCart(); updateAllCardQtyUI(); },
+    openCart, openMenu
+  };
+
+})();
+</script>
+
 </body>
 </html>
