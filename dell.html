@@ -124,6 +124,7 @@
       statusEl.textContent = "Typing...";
 
       try {
+        // Directly call your API route
         const res = await fetch("/api/qwen?content=" + encodeURIComponent(text));
         const data = await res.json();
         addMessage(data.answer || "⚠️ No response", "bot");
