@@ -1,0 +1,147 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Kyro Chatbot</title>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+  <style>
+    body { font-family: Arial, sans-serif; background:#f5f5f5; margin:0; padding:0; }
+    #chat-box { height: 80vh; overflow-y: auto; padding: 15px; }
+    .message { display: flex; align-items: flex-end; margin-bottom: 12px; }
+    .message.user { justify-content: flex-end; }
+    .message .avatar { width: 35px; height: 35px; background:#ddd; border-radius:50%; display:flex; align-items:center; justify-content:center; margin:0 8px; }
+    .message .bubble { max-width: 65%; padding: 10px 14px; border-radius:12px; background:#e0e0e0; position:relative; }
+    .message.user .bubble { background:#0078ff; color:#fff; }
+    .timestamp { display:block; font-size:10px; color:#555; margin-top:4px; }
+    #input-area { display:flex; padding:10px; background:#fff; }
+    #user-input { flex:1; padding:10px; border:1px solid #ccc; border-radius:8px; outline:none; }
+    #send-btn { margin-left:8px; padding:10px 16px; border:none; border-radius:8px; background:#0078ff; color:white; cursor:pointer; }
+    #status { padding:6px; font-size:12px; color:green; }
+    .typing { display:flex; gap:4px; }
+    .typing-dot { width:6px; height:6px; background:#666; border-radius:50%; animation: blink 1.2s infinite; }
+    .typing-dot:nth-child(2){ animation-delay:0.2s; }
+    .typing-dot:nth-child(3){ animation-delay:0.4s; }
+    @keyframes blink { 0%,80%,100%{opacity:0;} 40%{opacity:1;} }
+  </style>
+</head>
+<body>
+  <h2 style="text-align:center;padding:10px;">🤖 Kyro Chatbot</h2>
+  <div id="status">Online</div>
+  <div id="chat-box"></div>
+  <div id="input-area">
+    <input type="text" id="user-input" placeholder="Type a message..." />
+    <button id="send-btn">Send</button>
+  </div>
+
+<script>
+const API_URL = "https://mistral-ai-three.vercel.app/";
+const chatBox = document.getElementById("chat-box");
+const userInput = document.getElementById("user-input");
+const sendBtn = document.getElementById("send-btn");
+const statusEl = document.getElementById("status");
+
+function getTime() {
+  const now = new Date();
+  return now.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" });
+}
+
+function addMessage(text, sender) {
+  const msg = document.createElement("div");
+  msg.classList.add("message", sender);
+
+  const avatar = document.createElement("div");
+  avatar.classList.add("avatar");
+  avatar.innerHTML =
+    sender === "user"
+      ? `<i class="fa-regular fa-user"></i>`
+      : `<i class="fa-solid fa-robot"></i>`;
+
+  const bubble = document.createElement("div");
+  bubble.classList.add("bubble");
+  bubble.innerHTML = text + `<span class="timestamp">${getTime()}</span>`;
+
+  if (sender === "user") {
+    msg.appendChild(bubble);
+    msg.appendChild(avatar);
+  } else {
+    msg.appendChild(avatar);
+    msg.appendChild(bubble);
+  }
+
+  chatBox.appendChild(msg);
+  chatBox.scrollTop = chatBox.scrollHeight;
+}
+
+function showTyping() {
+  const msg = document.createElement("div");
+  msg.classList.add("message", "bot");
+  msg.setAttribute("id", "typing");
+
+  const avatar = document.createElement("div");
+  avatar.classList.add("avatar");
+  avatar.innerHTML = `<i class="fa-solid fa-robot"></i>`;
+
+  const bubble = document.createElement("div");
+  bubble.classList.add("bubble", "typing");
+  bubble.innerHTML = `
+    <span class="typing-dot"></span>
+    <span class="typing-dot"></span>
+    <span class="typing-dot"></span>
+  `;
+
+  msg.appendChild(avatar);
+  msg.appendChild(bubble);
+  chatBox.appendChild(msg);
+  chatBox.scrollTop = chatBox.scrollHeight;
+
+  statusEl.textContent = "Typing...";
+}
+
+function removeTyping() {
+  const typing = document.getElementById("typing");
+  if (typing) typing.remove();
+  statusEl.textContent = "Online";
+}
+
+// ------------- API Call via Proxy ------------- //
+async function getAIResponse(prompt) {
+  try {
+    const url = `${API_URL}?id=12345&question=${encodeURIComponent(prompt)}`;
+    const res = await fetch(url);
+    const data = await res.json();
+    console.log("AI Response:", data);
+
+    if (data.answer) {
+      return data.answer;
+    } else if (data.error) {
+      return "⚠️ API Error: " + data.error;
+    } else {
+      return "⚠️ Invalid response.";
+    }
+  } catch (err) {
+    console.error(err);
+    return "⚠️ Connection error.";
+  }
+}
+
+async function sendMessage() {
+  const text = userInput.value.trim();
+  if (text === "") return;
+
+  addMessage(text, "user");
+  userInput.value = "";
+
+  showTyping();
+  const botReply = await getAIResponse(text);
+  removeTyping();
+  addMessage(botReply, "bot");
+}
+
+sendBtn.addEventListener("click", sendMessage);
+userInput.addEventListener("keypress", (e) => {
+  if (e.key === "Enter") sendMessage();
+});
+</script>
+</body>
+</html>

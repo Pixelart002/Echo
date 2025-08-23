@@ -1,0 +1,59 @@
+Ab jo. Tumhe Krna h wo ye h is puri file ko split kro part me mtlb jaisa abhi h waise hi dikhe pr files name Tut Jaye jisse scaling krne me koi dikkat Naa aye.
+Or isme profile banao or. Sabke liye alag alag hon profile ho or profile same ui pe bni ho usme edit or save krne ka option bhi ho jo usme fileds hai. Or jo ek store me hota h profile me wo sab ho
+Or.
+Ha. Ek adjustment hai. Products me. Tag ko manually daalunga me toh product me ek tag name ka. Bhi chiz add kredena default me none rhe. Otherwise jo likhun wo dhike
+product frontend se add krunga
+
+or ek admin panel banane jisse me ye saare action on off kr skta hu profile permission chsnge kr skta hu override krskta hu
+isme inventory management hoga full fledged iseme filterr ho search ho saare products list honr chiyeisme
+or user list bhi dikhe frontend se
+or order jo created h or live orders cancelled order aisi chize bhi dikhe
+
+
+
+
+NXT
+Check krne pr profile se address utha le or edit bhi kr skte h uske baad. Us user ka bill banana h. Is format me
+Company name
+address
+invoice 
+S.no.|particular | qty| price | TOTAL
+
+IN BELOW grand total
+this bill will be genrrated as an pdf
+agr koi product nac ho cart me toh security modularisation hoh
+
+Then ye bill ek WhatsApp number per send hoga direct
+Uske baad payment lenge ye page payment wala abhi keliye hai
+Login signup ki template bhi banao
+like
+in backend me ye save hota h rhega id: increment +1 system generated
+name:
+lastname :
+phone:
+email:
+password: with viewing
+address:
+ye h profile structure
+idme ye sab hone ke baad niche tick ka option lga do agree with terms & conditions.
+same login same signup bs login or signup me signup with google add krdena jon supabase se handle hoga
+
+
+
+Or ha ek important baat. Header me jo bkchodi krrhe ho wo thikh kro adjustment kro. Menu btn right me kro or profile btn menu ke andar kronsirfcart hoga or abhi jaha menu tha waha pr logo hoga. Company ka or cart ka caluculation number jaha dikh rhe tha waise nhi hogawo btn ke upar hi notification me dikhe alg se Mt banao or ha carousel joh usme saare products nhi dikhaane h sirf top products dikhaane h
+Or make ultra rich ui
+
+Or themestyle color change krne wala btn bhi daal dena. Menu me below jaha social icons aate h uske upar
+
+
+
+
+
+strictly follow all steps do full follow ups CRUD MODULARISATION. SECURITY OR OR LOAD HANDLING. OR MICRO SERVICES ADD KRO OR CHECK OUT KRNE KE BAAD ORDER CREATE KRNA H THEN BILL GENERATE HOGA BINA ORDER CREATE HUE KOI BILL GENERATE NHI HOGA
+
+
+ or h  jo sctions admin keliye h wo bs admin ke login krne pr hi dikhe 
+ 
+
+
+sabse phle structure list kro

@@ -1,0 +1,80 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Qwen Chat</title>
+  <style>
+    body { font-family: Arial, sans-serif; margin: 0; padding: 0; background: #f4f4f4; }
+    #chat-box { height: 80vh; overflow-y: auto; padding: 10px; }
+    .message { margin: 8px 0; display: flex; }
+    .user { justify-content: flex-end; }
+    .bot { justify-content: flex-start; }
+    .bubble { padding: 8px 12px; border-radius: 12px; max-width: 60%; }
+    .user .bubble { background: #4caf50; color: #fff; }
+    .bot .bubble { background: #ddd; color: #000; }
+    #input-area { display: flex; padding: 10px; background: #fff; }
+    #user-input { flex: 1; padding: 8px; font-size: 16px; }
+    #send-btn { padding: 8px 16px; margin-left: 8px; }
+  </style>
+</head>
+<body>
+  <div id="chat-box"></div>
+
+  <div id="input-area">
+    <input id="user-input" type="text" placeholder="Type your message..." />
+    <button id="send-btn">Send</button>
+  </div>
+
+  <script>
+    const API_URL = "https://your-app.vercel.app/api/qwen"; // 👈 apna deployed proxy url yaha daalna
+    const chatBox = document.getElementById("chat-box");
+    const userInput = document.getElementById("user-input");
+    const sendBtn = document.getElementById("send-btn");
+
+    // Helper: Add message
+    function addMessage(text, sender) {
+      const msg = document.createElement("div");
+      msg.classList.add("message", sender);
+      const bubble = document.createElement("div");
+      bubble.classList.add("bubble");
+      bubble.textContent = text;
+      msg.appendChild(bubble);
+      chatBox.appendChild(msg);
+      chatBox.scrollTop = chatBox.scrollHeight;
+    }
+
+    // Call proxy → Qwen
+    async function askQwen(prompt) {
+      try {
+        const res = await fetch(`${API_URL}?chat_id=demo&content=${encodeURIComponent(prompt)}`);
+        const data = await res.json();
+        return data.answer || "⚠️ No response.";
+      } catch (err) {
+        console.error(err);
+        return "⚠️ Connection error.";
+      }
+    }
+
+    // Send message
+    async function sendMessage() {
+      const text = userInput.value.trim();
+      if (!text) return;
+      addMessage(text, "user");
+      userInput.value = "";
+
+      addMessage("...", "bot"); // typing
+      const reply = await askQwen(text);
+
+      // Replace last bot bubble
+      const lastBot = chatBox.querySelector(".bot .bubble:last-child");
+      if (lastBot) lastBot.textContent = reply;
+      else addMessage(reply, "bot");
+    }
+
+    sendBtn.addEventListener("click", sendMessage);
+    userInput.addEventListener("keypress", e => {
+      if (e.key === "Enter") sendMessage();
+    });
+  </script>
+</body>
+</html>
