@@ -1,22 +1,38 @@
-// api/qwen.js
 export default async function handler(req, res) {
-  res.setHeader("Access-Control-Allow-Origin", "*");
-  res.setHeader("Access-Control-Allow-Methods", "GET, POST, OPTIONS");
-  res.setHeader("Access-Control-Allow-Headers", "Content-Type");
-  
-  if (req.method === "OPTIONS") return res.status(200).end();
-  
-  const { chat_id, content } = req.query;
-  
   try {
-    const qwenRes = await fetch(`https://qwen.a3z.workers.dev/api/completions?chat_id=${chat_id}&content=${encodeURIComponent(content)}`);
-    const data = await qwenRes.json();
+    const { chat_id, content } = req.query;
     
-    res.status(200).json({
-      answer: data.response || "⚠️ No answer from Qwen"
+    if (!chat_id || !content) {
+      return res.status(400).json({ error: "chat_id and content are required" });
+    }
+    
+    // Forward request to real Qwen API (replace with actual endpoint)
+    const apiRes = await fetch("https://qwen.a3z.workers.dev/api/completions?" +
+      new URLSearchParams({
+        chat_id,
+        content
+      })
+    );
+    
+    const data = await apiRes.json();
+    
+    // Agar response ke andar alag-alag naam ho to normalize karke bhejenge
+    const answer =
+      data.answer ||
+      data.response ||
+      data.output ||
+      data.result ||
+      data.choices?.[0]?.message?.content ||
+      null;
+    
+    return res.status(200).json({
+      chat_id,
+      question: content,
+      answer,
+      raw: data
     });
   } catch (err) {
-    console.error("Proxy Error:", err);
-    res.status(500).json({ error: "Proxy request failed" });
+    console.error("Proxy error:", err);
+    return res.status(500).json({ error: "Internal Server Error" });
   }
 }
